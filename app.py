@@ -220,47 +220,74 @@ def build_budget_status(form, monthly_cost):
     }
 
 
-def build_vm_recommendation(form):
-    cpu = float(form.get("cpu", 0))
-    memory = float(form.get("memory", 0))
-    vms = float(form.get("vms", 0))
-    memory_max = load_dataset_context()["ranges"]["memory"]["observed_maximum"]
+def generate_optimization_suggestions(form, monthly_cost, budget):
+    suggestions = []
 
-    if cpu < 30 and memory < memory_max * 0.4 and vms > 1:
-        return "Reduce VM count: usage is low compared with the selected number of virtual machines."
-    if cpu > 80 and memory > memory_max * 0.8:
-        return "Scale up resources: workload is compute and memory intensive."
-    if cpu > 80:
-        return "Use compute-optimized resources: CPU demand is high."
-    if memory > memory_max * 0.8:
-        return "Use memory-optimized resources: memory demand is high."
-    return "Keep current resource plan: usage looks balanced."
+    try:
+        cpu = float(form.get("cpu", 0))
+        memory = float(form.get("memory", 0))
+        storage = float(form.get("storage", 0))
+        bandwidth = float(form.get("bandwidth", 0))
+        vms = float(form.get("vms", 1))
+    except ValueError:
+        return ["Unable to generate suggestions due to invalid inputs."]
 
+    # RULE 1: CPU Optimization
+    if vms > 6:
+        suggestions.append(
+            f"Your VM/Server count is high (currently {int(vms)}). Consider reducing the active server count "
+            f"(e.g., from {int(vms)} to 6) to lower compute costs. Reason: CPU allocation heavily impacts cloud cost."
+        )
+    elif cpu > 80:
+        suggestions.append(
+            f"High CPU utilization detected ({cpu}%). Consider optimizing code, implementing caching, "
+            f"or using compute-optimized instance types to improve performance."
+        )
 
-def build_recommendations(form):
-    recommendations = []
-    cpu = float(form.get("cpu", 0))
-    memory = float(form.get("memory", 0))
-    bandwidth = float(form.get("bandwidth", 0))
-    storage = float(form.get("storage", 0))
-    vms = float(form.get("vms", 0))
-    ranges = load_dataset_context()["ranges"]
+    # RULE 2: RAM Optimization
+    if memory > 16:
+        suggestions.append(
+            f"High memory allocation detected ({memory} GB). Consider memory optimization or "
+            f"switching to memory-efficient instance types (e.g. memory-optimized VM families)."
+        )
 
-    if cpu < 30 and vms > 1:
-        recommendations.append("CPU usage is low for the selected VM count. Consider reducing virtual machines to avoid over-provisioning.")
-    if cpu > 80:
-        recommendations.append("CPU usage is high. A larger compute instance may be required for stable performance.")
-    if memory > ranges["memory"]["observed_maximum"] * 0.8:
-        recommendations.append("Memory usage is high. Consider increasing RAM or selecting a memory-optimized instance.")
-    if bandwidth > ranges["bandwidth"]["observed_maximum"] * 0.8:
-        recommendations.append("Bandwidth is high. Monitor data transfer because network usage can increase cloud cost.")
-    if storage > ranges["storage"]["observed_maximum"] * 0.8:
-        recommendations.append("Storage requirement is high. Review storage class and volume type before deployment.")
+    # RULE 3: STORAGE Optimization
+    if storage > 500:
+        suggestions.append(
+            f"High storage capacity requested ({storage} GB). Consider using data compression, "
+            f"archiving cold data, or reducing the overall storage size."
+        )
 
-    if not recommendations:
-        recommendations.append("Resource usage looks balanced for an approximate cost estimate.")
+    # RULE 4: NETWORK Optimization
+    if bandwidth > 300:
+        suggestions.append(
+            f"High network egress traffic ({bandwidth} GB). Consider reducing egress data, "
+            f"optimizing traffic flow, or implementing caching/CDNs."
+        )
 
-    return recommendations
+    # RULE 5: COST vs BUDGET RULE
+    if monthly_cost > budget:
+        # Determine highest cost driver dynamically based on pricing coefficients:
+        ram_cost = memory * 0.004
+        storage_cost = storage * 0.00005
+        bandwidth_cost = bandwidth * 0.0001
+        cpu_cost = cpu * 0.0001
+
+        drivers = [
+            ("RAM capacity", ram_cost),
+            ("Storage capacity", storage_cost),
+            ("Network bandwidth", bandwidth_cost),
+            ("CPU utilization", cpu_cost)
+        ]
+        highest_driver = max(drivers, key=lambda x: x[1])[0]
+
+        suggestions.append(
+            f"Predicted monthly cost (${monthly_cost:.2f}) exceeds your budget (${budget:.2f}). "
+            f"We suggest: 1) reducing your highest-cost resource ({highest_driver}), "
+            f"2) switching to a cheaper VM type, or 3) reducing your CPU/RAM balance."
+        )
+
+    return suggestions
 
 
 def get_provider_comparison(form):
@@ -381,18 +408,29 @@ def predict():
     predicted_cost = predictions.get(best_model_name, list(predictions.values())[0] if predictions else 0.0)
 
     cost_summary = build_cost_summary(predicted_cost)
-    recommendations = build_recommendations(request.form)
-    vm_recommendation = build_vm_recommendation(request.form)
-    budget_status = build_budget_status(request.form, cost_summary["monthly"])
     provider_comparison = get_provider_comparison(request.form)
-    save_prediction(request.form, cost_summary, recommendations + [vm_recommendation], budget_status)
+
+    # Check if budget is provided
+    raw_budget = request.form.get("budget", "").strip()
+    budget_status = None
+    recommendations = []
+
+    if raw_budget:
+        try:
+            budget_val = float(raw_budget)
+            budget_status = build_budget_status(request.form, cost_summary["monthly"])
+            recommendations = generate_optimization_suggestions(request.form, cost_summary["monthly"], budget_val)
+        except ValueError:
+            pass
+
+    save_prediction(request.form, cost_summary, recommendations, budget_status)
 
     return render_template(
         "index.html",
         prediction=predicted_cost,
         cost_summary=cost_summary,
         recommendations=recommendations,
-        vm_recommendation=vm_recommendation,
+        vm_recommendation=None,
         budget_status=budget_status,
         provider_comparison=provider_comparison,
         model_predictions=predictions,

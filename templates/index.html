@@ -832,23 +832,24 @@
                     <strong>{{ budget_status.status }}</strong>
                     <p style="margin: 6px 0 0;">{{ budget_status.message }}</p>
                 </div>
-            {% endif %}
 
-            {% if vm_recommendation %}
-                <div class="recommendations">
-                    <strong>VM recommendation</strong>
-                    <p style="margin: 6px 0 0;">{{ vm_recommendation }}</p>
-                </div>
-            {% endif %}
-
-            {% if recommendations %}
-                <div class="recommendations">
-                    <strong>Optimization suggestions</strong>
-                    <ul>
-                        {% for item in recommendations %}
-                            <li>{{ item }}</li>
-                        {% endfor %}
-                    </ul>
+                {% if recommendations %}
+                    <div class="recommendations">
+                        <strong>Optimization suggestions</strong>
+                        <ul>
+                            {% for item in recommendations %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div style="margin-top: 24px;">
+                    <button id="opt-unlock-btn" class="preset-button" type="button" style="border-color: var(--amber); color: var(--amber); font-weight: 700; width: 100%; justify-content: center; display: inline-flex; padding: 12px 16px;">Do you want optimization suggestions?</button>
+                    <div id="opt-unlock-msg" class="recommendations" style="display: none; margin-top: 14px; background: #fffbeb; border-color: #fef3c7; color: #92400e;">
+                        <strong>Unlock Suggestions</strong>
+                        <p style="margin: 6px 0 0;">Please enter your monthly budget to unlock optimization suggestions.</p>
+                    </div>
                 </div>
             {% endif %}
 
@@ -1079,6 +1080,16 @@
     document.addEventListener("DOMContentLoaded", () => {
         const savedLevel = localStorage.getItem("userLevel") || "intermediate";
         setUserLevel(savedLevel);
+
+        // Optimization suggestions unlock handler
+        const unlockBtn = document.getElementById("opt-unlock-btn");
+        const unlockMsg = document.getElementById("opt-unlock-msg");
+        if (unlockBtn && unlockMsg) {
+            unlockBtn.addEventListener("click", () => {
+                unlockMsg.style.display = "block";
+                unlockBtn.style.display = "none";
+            });
+        }
     });
 </script>
 </body>
