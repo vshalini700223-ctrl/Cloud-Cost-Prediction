@@ -623,6 +623,31 @@
             background: rgba(16, 185, 129, 0.015);
         }
 
+        .model-pred-card span.model-name {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .model-pred-card strong.model-val {
+            display: block;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--ink);
+        }
+        .model-pred-card.best strong.model-val {
+            color: var(--green);
+        }
+
+        .model-pred-card span.model-monthly {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
         @media (max-width: 920px) {
             .hero,
             form,
@@ -793,9 +818,9 @@
                                 {% if name == best_model_name %}
                                     <span style="position: absolute; top: -10px; right: 12px; background: var(--green); color: white; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);">Best Model</span>
                                 {% endif %}
-                                <span style="display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px;">{{ name }}</span>
-                                <strong style="display: block; font-size: 22px; font-weight: 800; color: {% if name == best_model_name %}var(--green){% else %}var(--ink){% endif %};">${{ val }}/hr</strong>
-                                <span style="display: block; font-size: 13px; color: var(--muted); margin-top: 6px;">Monthly: ${{ (val * 24 * 30) | round(2) }}</span>
+                                <span class="model-name">{{ name }}</span>
+                                <strong class="model-val">${{ val }}/hr</strong>
+                                <span class="model-monthly">Monthly: ${{ (val * 24 * 30) | round(2) }}</span>
                             </div>
                         {% endfor %}
                     </div>
