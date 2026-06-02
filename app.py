@@ -232,11 +232,25 @@ def generate_optimization_suggestions(form, monthly_cost, budget):
     except ValueError:
         return ["Unable to generate suggestions due to invalid inputs."]
 
-    # RULE 1: CPU Optimization
-    if vms > 6:
+    # Calculate hourly budget limit
+    hourly_budget = budget / 720.0
+
+    # Calculate dynamic thresholds based on resource cost allocations:
+    # 1. VM/CPU count gets ~40% of the hourly budget. Average VM cost is $0.068/hr.
+    vms_threshold = max(1.0, round(hourly_budget / 0.068))
+    # 2. Memory gets ~30% of the hourly budget. Cost is $0.004/GB-hr.
+    ram_threshold = max(2.0, round((hourly_budget * 0.30) / 0.004))
+    # 3. Storage gets ~15% of the hourly budget. Cost is $0.00005/GB-hr.
+    storage_threshold = max(20.0, round((hourly_budget * 0.15) / 0.00005))
+    # 4. Bandwidth gets ~20% of the hourly budget. Cost is $0.0001/GB-hr.
+    bandwidth_threshold = max(10.0, round((hourly_budget * 0.20) / 0.0001))
+
+    # RULE 1: CPU / VM Count Optimization
+    if vms > vms_threshold:
         suggestions.append(
-            f"Your VM/Server count is high (currently {int(vms)}). Consider reducing the active server count "
-            f"(e.g., from {int(vms)} to 6) to lower compute costs. Reason: CPU allocation heavily impacts cloud cost."
+            f"Your VM/Server count ({int(vms)}) exceeds the budget-allocated threshold of {int(vms_threshold)} VMs "
+            f"for your ${budget:.2f} budget. Consider reducing the active server count to stay within budget. "
+            f"Reason: CPU allocation heavily impacts cloud cost."
         )
     elif cpu > 80:
         suggestions.append(
@@ -245,24 +259,24 @@ def generate_optimization_suggestions(form, monthly_cost, budget):
         )
 
     # RULE 2: RAM Optimization
-    if memory > 16:
+    if memory > ram_threshold:
         suggestions.append(
-            f"High memory allocation detected ({memory} GB). Consider memory optimization or "
-            f"switching to memory-efficient instance types (e.g. memory-optimized VM families)."
+            f"Your Memory allocation ({memory} GB) exceeds the budget-allocated threshold of {int(ram_threshold)} GB RAM "
+            f"for your ${budget:.2f} budget. Consider memory optimization or using memory-efficient VM families."
         )
 
     # RULE 3: STORAGE Optimization
-    if storage > 500:
+    if storage > storage_threshold:
         suggestions.append(
-            f"High storage capacity requested ({storage} GB). Consider using data compression, "
-            f"archiving cold data, or reducing the overall storage size."
+            f"Your Storage capacity ({storage} GB) exceeds the budget-allocated threshold of {int(storage_threshold)} GB "
+            f"for your ${budget:.2f} budget. Consider data compression, archiving cold data, or reducing overall storage size."
         )
 
     # RULE 4: NETWORK Optimization
-    if bandwidth > 300:
+    if bandwidth > bandwidth_threshold:
         suggestions.append(
-            f"High network egress traffic ({bandwidth} GB). Consider reducing egress data, "
-            f"optimizing traffic flow, or implementing caching/CDNs."
+            f"Your Network bandwidth ({bandwidth} GB) exceeds the budget-allocated threshold of {int(bandwidth_threshold)} GB "
+            f"for your ${budget:.2f} budget. Consider optimizing data traffic flow, CDN integration, or response compression."
         )
 
     # RULE 5: COST vs BUDGET RULE
