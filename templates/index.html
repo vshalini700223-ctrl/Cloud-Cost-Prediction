@@ -227,15 +227,73 @@
         }
 
         .preset-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
             margin: 16px 0 24px;
         }
 
-        .preset-button:hover,
-        .nav-link:hover {
+        .preset-group {
+            display: inline-flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+
+        .preset-group:hover {
             border-color: var(--blue);
-            color: var(--blue);
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
             transform: translateY(-1px);
+        }
+
+        .preset-group .preset-button {
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            padding: 10px 16px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--ink);
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+
+        .preset-group .preset-button:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .preset-refresh {
+            border: 0;
+            background: transparent;
+            border-left: 1px solid var(--line);
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+
+        .preset-refresh:hover {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .refresh-icon {
+            width: 14px;
+            height: 14px;
+            color: var(--muted);
+            transition: transform 0.3s ease;
+        }
+
+        .preset-refresh:hover .refresh-icon {
+            color: var(--blue);
+            transform: rotate(180deg);
         }
 
         form {
@@ -618,9 +676,24 @@
             </div>
 
             <div class="preset-row" aria-label="Sample workload presets">
-                <button class="preset-button" type="button" data-cpu="25" data-memory="1.0" data-storage="220" data-bandwidth="180" data-vms="1" data-budget="15">Small app</button>
-                <button class="preset-button" type="button" data-cpu="55" data-memory="2.0" data-storage="460" data-bandwidth="420" data-vms="1" data-budget="35">Medium app</button>
-                <button class="preset-button" type="button" data-cpu="90" data-memory="3.75" data-storage="950" data-bandwidth="480" data-vms="1" data-budget="75">Heavy app</button>
+                <div class="preset-group">
+                    <button class="preset-button" type="button" data-preset="small">Small app</button>
+                    <button class="preset-refresh" type="button" data-preset="small" title="Randomize small app values">
+                        <svg class="refresh-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    </button>
+                </div>
+                <div class="preset-group">
+                    <button class="preset-button" type="button" data-preset="medium">Medium app</button>
+                    <button class="preset-refresh" type="button" data-preset="medium" title="Randomize medium app values">
+                        <svg class="refresh-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    </button>
+                </div>
+                <div class="preset-group">
+                    <button class="preset-button" type="button" data-preset="heavy">Heavy app</button>
+                    <button class="preset-refresh" type="button" data-preset="heavy" title="Randomize heavy app values">
+                        <svg class="refresh-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    </button>
+                </div>
             </div>
 
             <form action="/predict" method="post">
@@ -711,21 +784,6 @@
                 </div>
             {% endif %}
 
-            {% if provider_comparison %}
-                <div class="comparison">
-                    <strong>Low-cost options from dataset</strong>
-                    <div class="comparison-grid">
-                        {% for option in provider_comparison %}
-                            <div class="option-card">
-                                <strong>{{ option.provider }}</strong>
-                                <span>{{ option.region }}</span>
-                                <span>{{ option.vm_type }}</span>
-                                <span>${{ option.monthly }}/month</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
 
             {% if dataset_context %}
                 <div class="dataset-panel">
@@ -770,15 +828,63 @@
     </section>
 </main>
 <script>
-    const presetButtons = document.querySelectorAll(".preset-button");
-    const fieldMap = ["cpu", "memory", "storage", "bandwidth", "vms", "budget"];
+    const presetRanges = {
+        small: {
+            cpu: [10, 30],
+            memory: [1.0, 1.75],
+            storage: [100, 250],
+            bandwidth: [50, 150],
+            vms: [1, 2],
+            budget: [10, 25]
+        },
+        medium: {
+            cpu: [35, 65],
+            memory: [1.75, 2.75],
+            storage: [300, 600],
+            bandwidth: [180, 350],
+            vms: [2, 4],
+            budget: [30, 55]
+        },
+        heavy: {
+            cpu: [70, 95],
+            memory: [3.0, 3.75],
+            storage: [700, 1000],
+            bandwidth: [380, 500],
+            vms: [4, 8],
+            budget: [60, 120]
+        }
+    };
 
-    presetButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            fieldMap.forEach((field) => {
-                const input = document.getElementById(field);
-                input.value = button.dataset[field];
-            });
+    function getRandomArbitrary(min, max, isInt = false) {
+        const val = Math.random() * (max - min) + min;
+        return isInt ? Math.floor(val) : parseFloat(val.toFixed(2));
+    }
+
+    function applyPreset(presetType) {
+        const ranges = presetRanges[presetType];
+        if (!ranges) return;
+
+        // Generate randomized values in range
+        const cpu = getRandomArbitrary(ranges.cpu[0], ranges.cpu[1], true);
+        const memory = getRandomArbitrary(ranges.memory[0], ranges.memory[1]);
+        const storage = getRandomArbitrary(ranges.storage[0], ranges.storage[1], true);
+        const bandwidth = getRandomArbitrary(ranges.bandwidth[0], ranges.bandwidth[1], true);
+        const vms = getRandomArbitrary(ranges.vms[0], ranges.vms[1], true);
+        const budget = getRandomArbitrary(ranges.budget[0], ranges.budget[1], true);
+
+        // Populate values
+        document.getElementById("cpu").value = cpu;
+        document.getElementById("memory").value = memory;
+        document.getElementById("storage").value = storage;
+        document.getElementById("bandwidth").value = bandwidth;
+        document.getElementById("vms").value = vms;
+        document.getElementById("budget").value = budget;
+    }
+
+    document.querySelectorAll(".preset-button, .preset-refresh").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const presetType = btn.dataset.preset;
+            applyPreset(presetType);
         });
     });
 
