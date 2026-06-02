@@ -998,12 +998,12 @@
             memory: {
                 label: "Memory Capacity",
                 placeholder: "Example: 2",
-                hint: "RAM in Gigabytes. Corresponds to standard instance sizes (1.0 - 3.75 GB)."
+                hint: "RAM in Gigabytes. Corresponds to standard instance sizes ({{ dataset_context.ranges.memory.observed_minimum | round(2) }} - {{ dataset_context.ranges.memory.observed_maximum | round(2) }} GB)."
             },
             storage: {
                 label: "Allocated Storage",
                 placeholder: "Example: 460",
-                hint: "Total disk storage space. Maps to block volume sizes (100 - 1000 GB)."
+                hint: "Total disk storage space. Maps to block volume sizes ({{ dataset_context.ranges.storage.observed_minimum | round(2) }} - {{ dataset_context.ranges.storage.observed_maximum | round(2) }} GB)."
             },
             bandwidth: {
                 label: "Monthly Data Egress",
@@ -1025,22 +1025,22 @@
             cpu: {
                 label: "CPU utilization (x₁)",
                 placeholder: "Example: 55.00",
-                hint: "Mean CPU utilization coefficient. Training range: [10.06% - 99.95%]."
+                hint: "Mean CPU utilization coefficient. Training range: [{{ dataset_context.ranges.cpu.observed_minimum | round(2) }}% - {{ dataset_context.ranges.cpu.observed_maximum | round(2) }}%]."
             },
             memory: {
                 label: "RAM allocation (x₂)",
                 placeholder: "Example: 2.00",
-                hint: "Provisioned memory capacity (memory_gb). Training range: [1.00 - 3.75 GB]."
+                hint: "Provisioned memory capacity (memory_gb). Training range: [{{ dataset_context.ranges.memory.observed_minimum | round(2) }} - {{ dataset_context.ranges.memory.observed_maximum | round(2) }} GB]."
             },
             storage: {
                 label: "Disk capacity (x₃)",
                 placeholder: "Example: 460.00",
-                hint: "Block storage size (storage_gb, mapped to disk_io). Training range: [101.41 - 999.60 GB]."
+                hint: "Block storage size (storage_gb, mapped to disk_io). Training range: [{{ dataset_context.ranges.storage.observed_minimum | round(2) }} - {{ dataset_context.ranges.storage.observed_maximum | round(2) }} GB]."
             },
             bandwidth: {
                 label: "Network egress (x₄)",
                 placeholder: "Example: 420.00",
-                hint: "Bandwidth volume (bandwidth_gb, mapped to net_io). Training range: [50.01 - 499.50 GB]."
+                hint: "Bandwidth volume (bandwidth_gb, mapped to net_io). Training range: [{{ dataset_context.ranges.bandwidth.observed_minimum | round(2) }} - {{ dataset_context.ranges.bandwidth.observed_maximum | round(2) }} GB]."
             },
             vms: {
                 label: "Instance count (x₅)",

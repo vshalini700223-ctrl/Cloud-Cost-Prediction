@@ -69,13 +69,42 @@ def load_metrics():
 
 
 def load_dataset_context():
-    global DATASET_CONTEXT
+    # Load dynamically from model metrics if available to keep ranges and rows in sync with the trained model
+    metrics = load_metrics()
+    if metrics and "dataset" in metrics:
+        ds = metrics["dataset"]
+        ranges = {}
+        feature_ranges = ds.get("feature_ranges", {})
+        for feature in FEATURES:
+            col = feature["column"]
+            if col in feature_ranges:
+                ranges[feature["field"]] = feature_ranges[col]
+            else:
+                ranges[feature["field"]] = {
+                    "minimum": feature["minimum"],
+                    "maximum": feature["maximum"] or 100.0,
+                    "observed_minimum": feature["minimum"],
+                    "observed_maximum": feature["maximum"] or 100.0,
+                }
+        return {
+            "ranges": ranges,
+            "rows": ds.get("rows", 0),
+            "providers": ds.get("providers", []),
+            "regions": ds.get("regions", []),
+            "vm_types": ds.get("vm_types", []),
+            "features": FEATURES,
+            "column_mappings": ds.get("column_mappings", {}),
+            "source_file": ds.get("source_file", ""),
+        }
 
-    if DATASET_CONTEXT is not None:
-        return DATASET_CONTEXT
-
+    # Fallback to direct dataset file loading if metrics don't exist yet
     default_ranges = {
-        feature["field"]: {"minimum": feature["minimum"], "maximum": feature["maximum"]}
+        feature["field"]: {
+            "minimum": feature["minimum"],
+            "maximum": feature["maximum"] or 100.0,
+            "observed_minimum": feature["minimum"],
+            "observed_maximum": feature["maximum"] or 100.0,
+        }
         for feature in FEATURES
     }
     context = {
@@ -85,31 +114,33 @@ def load_dataset_context():
         "regions": [],
         "vm_types": [],
         "features": FEATURES,
+        "column_mappings": {},
+        "source_file": "",
     }
 
     active_dataset_path = get_active_dataset_path()
     if not active_dataset_path.exists():
-        DATASET_CONTEXT = context
         return context
 
-    df, dataset_info = prepare_dataset(active_dataset_path)
-    feature_ranges = get_feature_ranges(df)
-    ranges = {}
-    for feature in FEATURES:
-        ranges[feature["field"]] = feature_ranges[feature["column"]]
+    try:
+        df, dataset_info = prepare_dataset(active_dataset_path)
+        feature_ranges = get_feature_ranges(df)
+        ranges = {}
+        for feature in FEATURES:
+            ranges[feature["field"]] = feature_ranges[feature["column"]]
 
-    context = {
-        "ranges": ranges,
-        "rows": int(len(df)),
-        "providers": sorted(df["cloud_provider"].dropna().unique().tolist()) if "cloud_provider" in df else [],
-        "regions": sorted(df["region"].dropna().unique().tolist()) if "region" in df else [],
-        "vm_types": sorted(df["vm_type"].dropna().unique().tolist()) if "vm_type" in df else [],
-        "features": FEATURES,
-        "column_mappings": dataset_info["column_mappings"],
-        "source_file": dataset_info["source_file"],
-    }
-    DATASET_CONTEXT = context
-    return context
+        return {
+            "ranges": ranges,
+            "rows": int(len(df)),
+            "providers": sorted(df["cloud_provider"].dropna().unique().tolist()) if "cloud_provider" in df else [],
+            "regions": sorted(df["region"].dropna().unique().tolist()) if "region" in df else [],
+            "vm_types": sorted(df["vm_type"].dropna().unique().tolist()) if "vm_type" in df else [],
+            "features": FEATURES,
+            "column_mappings": dataset_info["column_mappings"],
+            "source_file": dataset_info["source_file"],
+        }
+    except Exception:
+        return context
 
 
 def load_history(limit=12):
