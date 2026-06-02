@@ -458,7 +458,7 @@
                             <strong>{{ name }}</strong>
                             <span>R2 score: {{ values.r2 }}</span>
                             <div class="bar-track" style="margin-top: 8px;">
-                                <div class="bar-fill" style="width: {{ values.r2 * 100 }}%;"></div>
+                                <div class="bar-fill" data-percent="{{ values.r2 * 100 }}"></div>
                             </div>
                         </div>
                     {% endfor %}
@@ -476,7 +476,7 @@
                             <span>{{ (item.importance * 100) | round(1) }}%</span>
                         </div>
                         <div class="bar-track">
-                            <div class="bar-fill" style="width: {{ item.importance * 100 }}%;"></div>
+                            <div class="bar-fill" data-percent="{{ item.importance * 100 }}"></div>
                         </div>
                     </div>
                 {% endfor %}
@@ -568,5 +568,13 @@
     </section>
 
 </main>
+<script>
+    document.querySelectorAll('.bar-fill').forEach(bar => {
+        const pct = bar.getAttribute('data-percent');
+        if (pct) {
+            bar.style.width = pct + '%';
+        }
+    });
+</script>
 </body>
 </html>
