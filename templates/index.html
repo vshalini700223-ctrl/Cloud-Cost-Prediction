@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Cloud Cost Planner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f8fafc;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --panel: #ffffff;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+            --green: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+            --gradient: linear-gradient(135deg, #3b82f6, #06b6d4);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Outfit', Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 35%),
+                radial-gradient(circle at top right, rgba(6, 182, 212, 0.1), transparent 30%),
+                var(--bg);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        main {
+            width: min(1140px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 60px;
+        }
+
+        nav,
+        .nav-actions,
+        .preset-row,
+        .actions,
+        .form-heading {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        nav {
+            justify-content: space-between;
+            margin-bottom: 36px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-mark {
+            display: grid;
+            width: 38px;
+            height: 38px;
+            place-items: center;
+            border-radius: 10px;
+            background: var(--gradient);
+            color: #fff;
+            font-weight: 800;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        a {
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        a:hover {
+            color: var(--cyan);
+        }
+
+        .nav-link,
+        .preset-button {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--ink);
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-link {
+            color: var(--blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 24px;
+            align-items: stretch;
+            margin-bottom: 24px;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-bottom: 14px;
+            font-size: clamp(34px, 5vw, 52px);
+            line-height: 1.05;
+            letter-spacing: -1px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            margin-bottom: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .hero-card,
+        .panel,
+        .quick-card,
+        .metric-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hero-card {
+            padding: 36px;
+        }
+
+        .quick-card {
+            padding: 28px;
+        }
+
+        .hero-pills {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .pill {
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.06);
+            color: var(--blue);
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin: 20px 0 28px;
+        }
+
+        .step {
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.7);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.02);
+            transition: transform 0.2s ease;
+        }
+        .step:hover {
+            transform: translateY(-2px);
+        }
+
+        .step strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: var(--ink);
+        }
+
+        .layout {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            padding: 32px;
+        }
+
+        .preset-row {
+            margin: 16px 0 24px;
+        }
+
+        .preset-button:hover,
+        .nav-link:hover {
+            border-color: var(--blue);
+            color: var(--blue);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+            transform: translateY(-1px);
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .field {
+            padding: 16px;
+            border: 1px solid rgba(226, 232, 240, 0.7);
+            border-radius: 12px;
+            background: rgba(248, 250, 252, 0.5);
+            transition: all 0.25s ease;
+        }
+        .field:focus-within {
+            border-color: var(--blue);
+            background: #ffffff;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.05);
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .label-text-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .field-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--blue);
+            opacity: 0.85;
+        }
+
+        label span.range-info {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(226, 232, 240, 0.5);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 15px;
+            font-family: inherit;
+            background: #ffffff;
+            color: var(--ink);
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+        }
+
+        .hint {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        button.primary {
+            border: 0;
+            border-radius: 10px;
+            background: var(--gradient);
+            color: white;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        button.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .actions {
+            grid-column: 1 / -1;
+            justify-content: flex-start;
+            padding-top: 8px;
+        }
+
+        .result,
+        .error,
+        .recommendations,
+        .budget,
+        .comparison,
+        .dataset-panel {
+            margin-top: 24px;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .result {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .result-value {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 40px;
+            color: #15803d;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .cost-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .metric-card {
+            padding: 16px;
+            box-shadow: none;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(187, 247, 208, 0.5);
+            border-radius: 12px;
+        }
+
+        .metric-card span {
+            display: block;
+            margin-bottom: 6px;
+            color: #166534;
+            opacity: 0.8;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .metric-card strong {
+            color: #14532d;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .recommendations,
+        .budget {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #92400e;
+        }
+
+        .budget.good {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+
+        .comparison {
+            background: #f0f9ff;
+            border: 1px solid #e0f2fe;
+        }
+
+        .dataset-panel {
+            background: #f8fafc;
+            border: 1px solid var(--line);
+        }
+
+        .dataset-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .dataset-item {
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .dataset-item span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .dataset-item strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 15px;
+            color: var(--ink);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .option-card {
+            padding: 14px;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            background: #fff;
+            transition: transform 0.2s ease;
+        }
+        .option-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .option-card strong,
+        .option-card span {
+            display: block;
+        }
+
+        .option-card strong {
+            color: #0369a1;
+        }
+
+        .option-card span {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .recommendations ul,
+        .error ul {
+            margin: 10px 0 0;
+            padding-left: 20px;
+            line-height: 1.5;
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #991b1b;
+        }
+
+        /* User Level Mode Selector */
+        .user-level-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 10px 0 24px 0;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--line);
+            flex-wrap: wrap;
+        }
+
+        .user-level-label {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-level-tabs {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+        }
+
+        .user-level-tab {
+            border: 0;
+            background: transparent;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .user-level-tab.active {
+            background: #ffffff;
+            color: var(--blue);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+        }
+
+        .user-level-tab:hover:not(.active) {
+            color: var(--ink);
+        }
+
+        @media (max-width: 920px) {
+            .hero,
+            form,
+            .cost-grid,
+            .steps,
+            .comparison-grid,
+            .dataset-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <nav>
+        <div class="brand">
+            <span class="brand-mark">$</span>
+            <span>Cloud Cost Planner</span>
+        </div>
+        <div class="nav-actions">
+            <a class="nav-link" href="/dashboard">Dashboard</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-card">
+            <h1>Estimate cloud cost before deployment.</h1>
+            <p>Choose a sample workload or enter your own resource values to estimate cost, check budget risk, and compare low-cost cloud options from the dataset.</p>
+            <div class="hero-pills">
+                <span class="pill">Budget alert</span>
+                <span class="pill">VM advice</span>
+                <span class="pill">Provider comparison</span>
+            </div>
+        </div>
+        <div class="quick-card">
+            <h2>How to use it</h2>
+            <p>Start with a sample workload if you are unsure. Inputs are limited to the training dataset range so the prediction stays inside known usage patterns.</p>
+        </div>
+    </section>
+
+    <section class="steps">
+        <div class="step">
+            <strong>1. Select a workload</strong>
+            <p>Use a preset to fill realistic values quickly.</p>
+        </div>
+        <div class="step">
+            <strong>2. Set budget</strong>
+            <p>Add an optional monthly budget to check cost risk.</p>
+        </div>
+        <div class="step">
+            <strong>3. Compare options</strong>
+            <p>Review cost, VM advice, and low-cost provider choices.</p>
+        </div>
+    </section>
+
+    <section class="layout">
+        <section class="panel">
+            <div class="form-heading">
+                <h2>Cloud Resource Details</h2>
+                <p style="margin-bottom: 0;">Enter the workload resources you plan to use.</p>
+            </div>
+
+            <div class="user-level-container">
+                <span class="user-level-label">Interface Mode:</span>
+                <div class="user-level-tabs" role="tablist">
+                    <button type="button" class="user-level-tab" data-level="beginner" role="tab" aria-selected="false">Beginner</button>
+                    <button type="button" class="user-level-tab active" data-level="intermediate" role="tab" aria-selected="true">Intermediate</button>
+                    <button type="button" class="user-level-tab" data-level="pro" role="tab" aria-selected="false">Advanced (Pro)</button>
+                </div>
+            </div>
+
+            <div class="preset-row" aria-label="Sample workload presets">
+                <button class="preset-button" type="button" data-cpu="25" data-memory="1.0" data-storage="220" data-bandwidth="180" data-vms="1" data-budget="15">Small app</button>
+                <button class="preset-button" type="button" data-cpu="55" data-memory="2.0" data-storage="460" data-bandwidth="420" data-vms="1" data-budget="35">Medium app</button>
+                <button class="preset-button" type="button" data-cpu="90" data-memory="3.75" data-storage="950" data-bandwidth="480" data-vms="1" data-budget="75">Heavy app</button>
+            </div>
+
+            <form action="/predict" method="post">
+                {% for feature in dataset_context.features %}
+                    <div class="field">
+                        <label for="{{ feature.field }}">
+                            <span class="label-text-container">
+                                {% if feature.field == 'cpu' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg>
+                                {% elif feature.field == 'memory' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path><line x1="9" y1="1" x2="9" y2="3"></line><line x1="15" y1="1" x2="15" y2="3"></line><line x1="9" y1="21" x2="9" y2="23"></line><line x1="15" y1="21" x2="15" y2="23"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+                                {% elif feature.field == 'storage' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                                {% elif feature.field == 'bandwidth' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="17 11 12 16 7 11"></polyline><line x1="12" y1="4" x2="12" y2="16"></line><path d="M17 21H7a3 3 0 0 1-3-3v-2"></path><path d="M20 16v2a3 3 0 0 1-3 3"></path></svg>
+                                {% elif feature.field == 'vms' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><rect x="6" y="6" width="12" height="4" rx="1"></rect><rect x="6" y="14" width="12" height="4" rx="1"></rect></svg>
+                                {% endif %}
+                                <span class="label-text">{{ feature.label }}</span>
+                            </span>
+                            <span class="range-info">{{ dataset_context.ranges[feature.field].minimum }} to {{ dataset_context.ranges[feature.field].maximum }} {{ feature.unit }}</span>
+                        </label>
+                        <input id="{{ feature.field }}" name="{{ feature.field }}" type="number" min="{{ dataset_context.ranges[feature.field].minimum }}" max="{{ dataset_context.ranges[feature.field].maximum }}" step="0.01" placeholder="Example: {{ feature.placeholder }}" value="{{ form[feature.field] if form else '' }}" required>
+                        <p class="hint" id="{{ feature.field }}-hint">Mapped to training column {{ feature.column }}.</p>
+                    </div>
+                {% endfor %}
+
+                <div class="field">
+                    <label for="budget">
+                        <span class="label-text-container">
+                            <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            <span class="label-text">Monthly budget</span>
+                        </span>
+                        <span class="range-info">optional</span>
+                    </label>
+                    <input id="budget" name="budget" type="number" min="0" step="0.01" placeholder="Example: 35" value="{{ form.budget if form else '' }}">
+                    <p class="hint" id="budget-hint">Used only for budget alert; it does not affect prediction.</p>
+                </div>
+
+                <div class="actions">
+                    <button class="primary" type="submit">Predict Cost</button>
+                </div>
+            </form>
+
+            {% if prediction is defined %}
+                <div class="result">
+                    <span class="result-value">${{ prediction }}</span>
+                    Estimated hourly cloud cost.
+                    <div class="cost-grid">
+                        <div class="metric-card">
+                            <span>Hourly</span>
+                            <strong>${{ cost_summary.hourly }}</strong>
+                        </div>
+                        <div class="metric-card">
+                            <span>Daily</span>
+                            <strong>${{ cost_summary.daily }}</strong>
+                        </div>
+                        <div class="metric-card">
+                            <span>Monthly</span>
+                            <strong>${{ cost_summary.monthly }}</strong>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if budget_status %}
+                <div class="budget {% if not budget_status.is_over %}good{% endif %}">
+                    <strong>{{ budget_status.status }}</strong>
+                    <p style="margin: 6px 0 0;">{{ budget_status.message }}</p>
+                </div>
+            {% endif %}
+
+            {% if vm_recommendation %}
+                <div class="recommendations">
+                    <strong>VM recommendation</strong>
+                    <p style="margin: 6px 0 0;">{{ vm_recommendation }}</p>
+                </div>
+            {% endif %}
+
+            {% if recommendations %}
+                <div class="recommendations">
+                    <strong>Optimization suggestions</strong>
+                    <ul>
+                        {% for item in recommendations %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if provider_comparison %}
+                <div class="comparison">
+                    <strong>Low-cost options from dataset</strong>
+                    <div class="comparison-grid">
+                        {% for option in provider_comparison %}
+                            <div class="option-card">
+                                <strong>{{ option.provider }}</strong>
+                                <span>{{ option.region }}</span>
+                                <span>{{ option.vm_type }}</span>
+                                <span>${{ option.monthly }}/month</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if dataset_context %}
+                <div class="dataset-panel">
+                    <strong>Training dataset context</strong>
+                    <p style="margin: 6px 0 0;">Predictions are based on {{ dataset_context.rows }} historical workload records from {{ dataset_context.providers | join(', ') }} across {{ dataset_context.regions | join(', ') }}.</p>
+                    <div class="dataset-grid">
+                        <div class="dataset-item">
+                            <span>VM types</span>
+                            <strong>{{ dataset_context.vm_types | join(', ') }}</strong>
+                        </div>
+                        <div class="dataset-item">
+                            <span>Bandwidth range</span>
+                            <strong>{{ dataset_context.ranges.bandwidth.observed_minimum }} - {{ dataset_context.ranges.bandwidth.observed_maximum }} GB</strong>
+                        </div>
+                        <div class="dataset-item">
+                            <span>Storage range</span>
+                            <strong>{{ dataset_context.ranges.storage.observed_minimum }} - {{ dataset_context.ranges.storage.observed_maximum }} GB</strong>
+                        </div>
+                        <div class="dataset-item">
+                            <span>VM range</span>
+                            <strong>{{ dataset_context.ranges.vms.observed_minimum }} - {{ dataset_context.ranges.vms.observed_maximum }}</strong>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+
+            {% if errors %}
+                <div class="error">
+                    Please fix these inputs:
+                    <ul>
+                        {% for item in errors %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </section>
+    </section>
+</main>
+<script>
+    const presetButtons = document.querySelectorAll(".preset-button");
+    const fieldMap = ["cpu", "memory", "storage", "bandwidth", "vms", "budget"];
+
+    presetButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            fieldMap.forEach((field) => {
+                const input = document.getElementById(field);
+                input.value = button.dataset[field];
+            });
+        });
+    });
+
+    const levelData = {
+        beginner: {
+            cpu: {
+                label: "Average Server Workload",
+                placeholder: "Example: 30 (light website/API)",
+                hint: "How busy will your server be? E.g., a quiet site uses 10-30%, active app uses 50-70%."
+            },
+            memory: {
+                label: "App Memory (RAM)",
+                placeholder: "Example: 1 (basic app)",
+                hint: "RAM size. E.g., basic database needs 1-2 GB, high-traffic node needs 3-4 GB."
+            },
+            storage: {
+                label: "Total File Storage",
+                placeholder: "Example: 150 (small database)",
+                hint: "Disk space for files/database. E.g., 100 GB is plenty for static blogs."
+            },
+            bandwidth: {
+                label: "Network Traffic (Downloads)",
+                placeholder: "Example: 100 (low traffic)",
+                hint: "Data users download. E.g., 50 GB is low traffic, 400 GB is heavy traffic."
+            },
+            vms: {
+                label: "Number of Servers",
+                placeholder: "Example: 1",
+                hint: "The model is currently trained for exactly 1 active server."
+            },
+            budget: {
+                label: "Maximum Monthly Expense",
+                placeholder: "Example: 20",
+                hint: "Optional limit to trigger alerts if predicted cost goes too high."
+            }
+        },
+        intermediate: {
+            cpu: {
+                label: "CPU Utilization",
+                placeholder: "Example: 55",
+                hint: "Target CPU utilization rate. Mapped to CPU capacity profile (cpu_usage)."
+            },
+            memory: {
+                label: "Memory Capacity",
+                placeholder: "Example: 2",
+                hint: "RAM in Gigabytes. Corresponds to standard instance sizes (1.0 - 3.75 GB)."
+            },
+            storage: {
+                label: "Allocated Storage",
+                placeholder: "Example: 460",
+                hint: "Total disk storage space. Maps to block volume sizes (100 - 1000 GB)."
+            },
+            bandwidth: {
+                label: "Monthly Data Egress",
+                placeholder: "Example: 420",
+                hint: "Estimated monthly network traffic. Affects outgoing data cost."
+            },
+            vms: {
+                label: "Virtual Machines (Count)",
+                placeholder: "Example: 1",
+                hint: "Server count. The dataset is currently calibrated for vm_count = 1."
+            },
+            budget: {
+                label: "Monthly Budget Alert",
+                placeholder: "Example: 35",
+                hint: "Optional budget limit. Used to check cost safety threshold."
+            }
+        },
+        pro: {
+            cpu: {
+                label: "CPU utilization (x₁)",
+                placeholder: "Example: 55.00",
+                hint: "Mean CPU utilization coefficient. Training range: [10.06% - 99.95%]."
+            },
+            memory: {
+                label: "RAM allocation (x₂)",
+                placeholder: "Example: 2.00",
+                hint: "Provisioned memory capacity (memory_gb). Training range: [1.00 - 3.75 GB]."
+            },
+            storage: {
+                label: "Disk capacity (x₃)",
+                placeholder: "Example: 460.00",
+                hint: "Block storage size (storage_gb, mapped to disk_io). Training range: [101.41 - 999.60 GB]."
+            },
+            bandwidth: {
+                label: "Network egress (x₄)",
+                placeholder: "Example: 420.00",
+                hint: "Bandwidth volume (bandwidth_gb, mapped to net_io). Training range: [50.01 - 499.50 GB]."
+            },
+            vms: {
+                label: "Instance count (x₅)",
+                placeholder: "Example: 1",
+                hint: "Active virtual machine count (vm_count, mapped to vCPU). Bounded to [1]."
+            },
+            budget: {
+                label: "Budget Threshold (B_max)",
+                placeholder: "Example: 35.00",
+                hint: "Optional pricing threshold to evaluate cost policy compliance."
+            }
+        }
+    };
+
+    function setUserLevel(level) {
+        // Save choice in localStorage
+        localStorage.setItem("userLevel", level);
+
+        // Update tabs active state
+        document.querySelectorAll(".user-level-tab").forEach((tab) => {
+            if (tab.dataset.level === level) {
+                tab.classList.add("active");
+                tab.setAttribute("aria-selected", "true");
+            } else {
+                tab.classList.remove("active");
+                tab.setAttribute("aria-selected", "false");
+            }
+        });
+
+        // Update labels, hints, and placeholders
+        const data = levelData[level];
+        if (!data) return;
+
+        Object.keys(data).forEach((fieldId) => {
+            const input = document.getElementById(fieldId);
+            const hint = document.getElementById(`${fieldId}-hint`);
+            const labelTextSpan = input ? input.parentElement.querySelector(".label-text") : null;
+
+            if (labelTextSpan) {
+                labelTextSpan.textContent = data[fieldId].label;
+            }
+            if (input) {
+                input.placeholder = data[fieldId].placeholder;
+            }
+            if (hint) {
+                hint.textContent = data[fieldId].hint;
+            }
+        });
+    }
+
+    // Add click listeners to tabs
+    document.querySelectorAll(".user-level-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+            setUserLevel(tab.dataset.level);
+        });
+    });
+
+    // Initialize user level on load
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedLevel = localStorage.getItem("userLevel") || "intermediate";
+        setUserLevel(savedLevel);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+services:
+  cloud-cost-planner:
+    build: .
+    ports:
+      - "5000:5000"

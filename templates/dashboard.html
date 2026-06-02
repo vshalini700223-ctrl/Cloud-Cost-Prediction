@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Model Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f5f7fb;
+            --ink: #172033;
+            --muted: #647086;
+            --line: #dbe3ee;
+            --panel: #ffffff;
+            --blue: #1f6feb;
+            --green: #14805e;
+            --amber: #9a6700;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background:
+                linear-gradient(135deg, rgba(31, 111, 235, 0.08), transparent 34%),
+                linear-gradient(315deg, rgba(20, 128, 94, 0.08), transparent 32%),
+                var(--bg);
+            color: var(--ink);
+        }
+
+        main {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 28px 0 48px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        a {
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .nav-link {
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #fff;
+            color: var(--blue);
+            padding: 10px 12px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        h1,
+        h2,
+        p {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: clamp(30px, 4vw, 44px);
+            line-height: 1.08;
+        }
+
+        h2 {
+            margin-bottom: 12px;
+            font-size: 22px;
+        }
+
+        p {
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #eaf2ff;
+            color: var(--blue);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin: 22px 0;
+        }
+
+        .panel,
+        .stat {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 16px 36px rgba(23, 32, 51, 0.08);
+        }
+
+        .panel {
+            padding: 22px;
+        }
+
+        .stat {
+            padding: 18px;
+        }
+
+        .stat span,
+        .panel .label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .stat strong {
+            font-size: 26px;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1.12fr 0.88fr;
+            gap: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            padding: 13px 0;
+            border-bottom: 1px solid #e7edf5;
+            text-align: left;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        tbody tr:first-child td {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .bar-row {
+            margin: 16px 0;
+        }
+
+        .model-chart {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .model-card {
+            padding: 14px;
+            border: 1px solid #e7edf5;
+            border-radius: 8px;
+            background: #fbfcff;
+        }
+
+        .model-card strong,
+        .model-card span {
+            display: block;
+        }
+
+        .model-card span {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 7px;
+            font-weight: 700;
+        }
+
+        .bar-label span:last-child {
+            color: var(--muted);
+        }
+
+        .bar-track {
+            height: 13px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e7edf5;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--green), var(--blue));
+        }
+
+        .notice {
+            border-color: #e7c76e;
+            background: #fff8e7;
+            color: var(--amber);
+        }
+
+        .feature-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .dataset-list {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .dataset-box {
+            padding: 14px;
+            border: 1px solid #e7edf5;
+            border-radius: 8px;
+            background: #fbfcff;
+        }
+
+        .dataset-box span {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #fbfcff;
+            padding: 8px 10px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        @media (max-width: 900px) {
+            nav {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .grid,
+            .section-grid,
+            .dataset-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <nav>
+        <strong>Cloud Cost Prediction System</strong>
+        <a class="nav-link" href="/">Back to Prediction</a>
+    </nav>
+
+    <header>
+        <span class="eyebrow">Proposal Result Verification</span>
+        <h1>Model performance dashboard.</h1>
+        <p>Use this page for model comparison, dataset summary, feature importance, and training verification.</p>
+    </header>
+
+    {% if not metrics %}
+        <section class="panel notice" style="margin-top: 22px;">
+            <h2>Metrics not found</h2>
+            <p>Run <strong>python train_model.py</strong> to create model_metrics.json, then reload this page.</p>
+        </section>
+    {% else %}
+        <section class="grid">
+            <div class="stat">
+                <span>Best model</span>
+                <strong>{{ metrics.best_model }}</strong>
+            </div>
+            <div class="stat">
+                <span>Dataset rows</span>
+                <strong>{{ metrics.dataset.rows }}</strong>
+            </div>
+            <div class="stat">
+                <span>Average cost</span>
+                <strong>${{ metrics.dataset.average_cost }}</strong>
+            </div>
+            <div class="stat">
+                <span>Minimum cost</span>
+                <strong>${{ metrics.dataset.minimum_cost }}</strong>
+            </div>
+            <div class="stat">
+                <span>Maximum cost</span>
+                <strong>${{ metrics.dataset.maximum_cost }}</strong>
+            </div>
+            <div class="stat">
+                <span>Target variable</span>
+                <strong>{{ metrics.dataset.target }}</strong>
+            </div>
+        </section>
+
+        <section class="section-grid">
+            <div class="panel">
+                <span class="label">MSE, RMSE, and R2 Score</span>
+                <h2>Regression Model Comparison</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>MSE</th>
+                            <th>RMSE</th>
+                            <th>R2 Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for name, values in metrics.models.items() %}
+                            <tr>
+                                <td>{{ name }}</td>
+                                <td>{{ values.mse }}</td>
+                                <td>{{ values.rmse }}</td>
+                                <td>{{ values.r2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="model-chart">
+                    {% for name, values in metrics.models.items() %}
+                        <div class="model-card">
+                            <strong>{{ name }}</strong>
+                            <span>R2 score: {{ values.r2 }}</span>
+                            <div class="bar-track" style="margin-top: 8px;">
+                                <div class="bar-fill" style="width: {{ values.r2 * 100 }}%;"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel">
+                <span class="label">Selected model explanation</span>
+                <h2>Feature Importance</h2>
+                <p>Higher values show stronger influence on the selected model's prediction.</p>
+                {% for item in metrics.feature_importance %}
+                    <div class="bar-row">
+                        <div class="bar-label">
+                            <span>{{ item.feature }}</span>
+                            <span>{{ (item.importance * 100) | round(1) }}%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: {{ item.importance * 100 }}%;"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel" style="margin-top: 16px;">
+            <span class="label">Feature selection</span>
+            <h2>Features Used During Training</h2>
+            <div class="feature-list">
+                {% for feature in metrics.dataset.features_used %}
+                    <span class="chip">{{ feature }}</span>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel" style="margin-top: 16px;">
+            <span class="label">Dataset context</span>
+            <h2>Cloud Workload Dataset</h2>
+            <p>The implementation maps incoming datasets to proposal-aligned features: CPU usage, memory usage, storage, bandwidth, virtual machines, and cost.</p>
+            <div class="dataset-list">
+                <div class="dataset-box">
+                    <span>Providers</span>
+                    <strong>{{ metrics.dataset.providers | join(', ') }}</strong>
+                </div>
+                <div class="dataset-box">
+                    <span>Regions</span>
+                    <strong>{{ metrics.dataset.regions | join(', ') }}</strong>
+                </div>
+                <div class="dataset-box">
+                    <span>VM types</span>
+                    <strong>{{ metrics.dataset.vm_types | join(', ') }}</strong>
+                </div>
+            </div>
+            <h2 style="margin-top: 20px;">Column Mapping</h2>
+            <div class="feature-list">
+                {% for target, source in metrics.dataset.column_mappings.items() %}
+                    <span class="chip">{{ source }} -> {{ target }}</span>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel" style="margin-top: 16px;">
+            <span class="label">Result explanation</span>
+            <h2>Why This Model Was Selected</h2>
+            <p>{{ metrics.selection_note or "The selected model has the lowest RMSE on the held-out test set." }}</p>
+        </section>
+    {% endif %}
+
+    <section class="panel" style="margin-top: 16px;">
+        <span class="label">Usage tracking</span>
+        <h2>Recent Predictions</h2>
+        {% if history %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>CPU</th>
+                            <th>Memory</th>
+                            <th>Storage</th>
+                            <th>Bandwidth</th>
+                            <th>VMs</th>
+                            <th>Monthly Cost</th>
+                            <th>Budget</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history %}
+                            <tr>
+                                <td>{{ item.timestamp }}</td>
+                                <td>{{ item.cpu_usage }}</td>
+                                <td>{{ item.memory_gb or item.memory_usage }}</td>
+                                <td>{{ item.storage_gb or item.disk_io }}</td>
+                                <td>{{ item.bandwidth_gb or item.net_io }}</td>
+                                <td>{{ item.vm_count or item.vCPU }}</td>
+                                <td>${{ item.monthly_cost }}</td>
+                                <td>{% if item.monthly_budget %}${{ item.monthly_budget }}{% else %}-{% endif %}</td>
+                                <td>{{ item.budget_status or "-" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No prediction history yet. Submit a prediction from the home page to create usage records.</p>
+        {% endif %}
+    </section>
+
+</main>
+</body>
+</html>
