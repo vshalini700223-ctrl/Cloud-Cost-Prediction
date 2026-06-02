@@ -853,30 +853,7 @@
             {% endif %}
 
 
-            {% if dataset_context %}
-                <div class="dataset-panel">
-                    <strong>Training dataset context</strong>
-                    <p style="margin: 6px 0 0;">Predictions are based on {{ dataset_context.rows }} historical workload records from {{ dataset_context.providers | join(', ') }} across {{ dataset_context.regions | join(', ') }}.</p>
-                    <div class="dataset-grid">
-                        <div class="dataset-item">
-                            <span>VM types</span>
-                            <strong>{{ dataset_context.vm_types | join(', ') }}</strong>
-                        </div>
-                        <div class="dataset-item">
-                            <span>Bandwidth range</span>
-                            <strong>{{ dataset_context.ranges.bandwidth.observed_minimum }} - {{ dataset_context.ranges.bandwidth.observed_maximum }} GB</strong>
-                        </div>
-                        <div class="dataset-item">
-                            <span>Storage range</span>
-                            <strong>{{ dataset_context.ranges.storage.observed_minimum }} - {{ dataset_context.ranges.storage.observed_maximum }} GB</strong>
-                        </div>
-                        <div class="dataset-item">
-                            <span>VM range</span>
-                            <strong>{{ dataset_context.ranges.vms.observed_minimum }} - {{ dataset_context.ranges.vms.observed_maximum }}</strong>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
+
 
             {% if error %}
                 <div class="error">{{ error }}</div>
