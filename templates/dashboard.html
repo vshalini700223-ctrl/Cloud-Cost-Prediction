@@ -437,7 +437,8 @@
                                 <th>Model</th>
                                 <th>MSE</th>
                                 <th>RMSE</th>
-                                <th>R2 Score</th>
+                                <th>Test R² Score</th>
+                                <th>5-Fold CV R² Score</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -447,6 +448,13 @@
                                     <td>{{ values.mse }}</td>
                                     <td>{{ values.rmse }}</td>
                                     <td>{{ values.r2 }}</td>
+                                    <td>
+                                        {% if values.cv_r2_mean is defined %}
+                                            {{ values.cv_r2_mean | round(4) }} <span style="color: var(--muted); font-weight: normal; font-size: 12px;">± {{ values.cv_r2_std | round(4) }}</span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -456,7 +464,10 @@
                     {% for name, values in metrics.models.items() %}
                         <div class="model-card">
                             <strong>{{ name }}</strong>
-                            <span>R2 score: {{ values.r2 }}</span>
+                            <span>Test R² Score: {{ values.r2 }}</span>
+                            {% if values.cv_r2_mean is defined %}
+                                <span style="margin-top: 2px;">5-Fold CV R²: {{ values.cv_r2_mean | round(4) }} ± {{ values.cv_r2_std | round(4) }}</span>
+                            {% endif %}
                             <div class="bar-track" style="margin-top: 8px;">
                                 <div class="bar-fill" data-percent="{{ values.r2 * 100 }}"></div>
                             </div>

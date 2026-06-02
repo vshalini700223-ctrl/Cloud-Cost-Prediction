@@ -2,7 +2,7 @@ import argparse
 import json
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -89,7 +89,16 @@ def main():
     for name, model in models.items():
         model.fit(X_train, y_train)
         predictions = model.predict(X_test)
-        results[name] = evaluate(y_test, predictions)
+        
+        # Test evaluation
+        eval_metrics = evaluate(y_test, predictions)
+        
+        # 5-fold cross validation R2 score
+        cv_scores = cross_val_score(model, X, y, cv=5, scoring='r2')
+        eval_metrics["cv_r2_mean"] = float(cv_scores.mean())
+        eval_metrics["cv_r2_std"] = float(cv_scores.std())
+        
+        results[name] = eval_metrics
         trained_models[name] = model
 
     for name, metrics in results.items():
@@ -102,6 +111,7 @@ def main():
 
     best_model_name = min(results, key=lambda name: results[name]["rmse"])
     joblib.dump(trained_models[best_model_name], MODEL_PATH)
+    joblib.dump(trained_models, "models.pkl")
 
     metrics_report = {
         "dataset": get_dataset_summary(df, dataset_info),

@@ -599,13 +599,38 @@
             color: var(--ink);
         }
 
+        .model-predictions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .model-pred-card {
+            padding: 16px;
+            border-radius: 10px;
+            background: #ffffff;
+            border: 1px solid var(--line);
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+            transition: all 0.2s ease;
+        }
+        .model-pred-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        }
+        .model-pred-card.best {
+            border-color: var(--green);
+            background: rgba(16, 185, 129, 0.015);
+        }
+
         @media (max-width: 920px) {
             .hero,
             form,
             .cost-grid,
             .steps,
             .comparison-grid,
-            .dataset-grid {
+            .dataset-grid,
+            .model-predictions-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -755,6 +780,24 @@
                             <span>Monthly</span>
                             <strong>${{ cost_summary.monthly }}</strong>
                         </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if model_predictions %}
+                <div class="comparison" style="margin-top: 24px; padding: 24px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(12px);">
+                    <h3 style="margin-bottom: 16px; font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Side-by-Side Model Comparison</h3>
+                    <div class="model-predictions-grid">
+                        {% for name, val in model_predictions.items() %}
+                            <div class="model-pred-card {% if name == best_model_name %}best{% endif %}">
+                                {% if name == best_model_name %}
+                                    <span style="position: absolute; top: -10px; right: 12px; background: var(--green); color: white; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);">Best Model</span>
+                                {% endif %}
+                                <span style="display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px;">{{ name }}</span>
+                                <strong style="display: block; font-size: 22px; font-weight: 800; color: {% if name == best_model_name %}var(--green){% else %}var(--ink){% endif %};">${{ val }}/hr</strong>
+                                <span style="display: block; font-size: 13px; color: var(--muted); margin-top: 6px;">Monthly: ${{ (val * 24 * 30) | round(2) }}</span>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
             {% endif %}

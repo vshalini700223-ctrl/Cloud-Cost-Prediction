@@ -23,13 +23,42 @@ def get_active_dataset_path():
     return PREPARED_DATASET_PATH if PREPARED_DATASET_PATH.exists() else DATASET_PATH
 
 
-def load_model():
-    if not MODEL_PATH.exists():
-        return None
-    return joblib.load(MODEL_PATH)
+MODELS_DICT_PATH = Path("models.pkl")
 
 
-model = load_model()
+def load_models():
+    if MODELS_DICT_PATH.exists():
+        try:
+            loaded = joblib.load(MODELS_DICT_PATH)
+            if isinstance(loaded, dict):
+                return loaded
+        except Exception:
+            pass
+
+    if MODEL_PATH.exists():
+        try:
+            single_model = joblib.load(MODEL_PATH)
+            return {"Best Model": single_model}
+        except Exception:
+            pass
+
+    return {}
+
+
+models = load_models()
+
+
+def get_best_model():
+    metrics = load_metrics()
+    if metrics and "best_model" in metrics:
+        best_name = metrics["best_model"]
+        if best_name in models:
+            return models[best_name], best_name
+
+    if models:
+        first_key = list(models.keys())[0]
+        return models[first_key], first_key
+    return None, None
 
 
 def load_metrics():
@@ -285,10 +314,10 @@ def dashboard():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if model is None:
+    if not models:
         return render_template(
             "index.html",
-            error="Model file not found. Run `python train_model.py` first.",
+            error="Model files not found. Run `python train_model.py` first.",
             form=request.form,
             dataset_context=load_dataset_context(),
         )
@@ -305,14 +334,21 @@ def predict():
     # Get requested VM count
     vms = float(request.form.get("vms", 1))
 
-    # Set vm_count to 1.0 for model prediction since model was trained on vm_count=1.0.
-    data_unit = data.copy()
-    if "vm_count" in data_unit.columns:
-        data_unit["vm_count"] = 1.0
+    # Calculate predictions for all models
+    predictions = {}
+    best_model_obj, best_model_name = get_best_model()
 
-    prediction = model.predict(data_unit)
-    unit_cost = float(prediction[0])
-    predicted_cost = round(unit_cost * vms, 4)
+    for name, m in models.items():
+        data_unit = data.copy()
+        if "vm_count" in data_unit.columns:
+            data_unit["vm_count"] = 1.0
+
+        pred_unit = float(m.predict(data_unit)[0])
+        predictions[name] = round(pred_unit * vms, 4)
+
+    # Primary predicted cost (from the best model)
+    predicted_cost = predictions.get(best_model_name, list(predictions.values())[0] if predictions else 0.0)
+
     cost_summary = build_cost_summary(predicted_cost)
     recommendations = build_recommendations(request.form)
     vm_recommendation = build_vm_recommendation(request.form)
@@ -328,6 +364,8 @@ def predict():
         vm_recommendation=vm_recommendation,
         budget_status=budget_status,
         provider_comparison=provider_comparison,
+        model_predictions=predictions,
+        best_model_name=best_model_name,
         form=request.form,
         dataset_context=load_dataset_context(),
     )
