@@ -258,8 +258,6 @@ def parse_form(form):
 
         if value < minimum:
             errors.append(f"{feature['label']} must be at least {minimum}.")
-        if maximum is not None and value > maximum:
-            errors.append(f"{feature['label']} must be at most {maximum}.")
 
         row[feature["column"]] = value
 
@@ -304,8 +302,17 @@ def predict():
             dataset_context=load_dataset_context(),
         )
 
-    prediction = model.predict(data)
-    predicted_cost = round(float(prediction[0]), 4)
+    # Get requested VM count
+    vms = float(request.form.get("vms", 1))
+
+    # Set vm_count to 1.0 for model prediction since model was trained on vm_count=1.0.
+    data_unit = data.copy()
+    if "vm_count" in data_unit.columns:
+        data_unit["vm_count"] = 1.0
+
+    prediction = model.predict(data_unit)
+    unit_cost = float(prediction[0])
+    predicted_cost = round(unit_cost * vms, 4)
     cost_summary = build_cost_summary(predicted_cost)
     recommendations = build_recommendations(request.form)
     vm_recommendation = build_vm_recommendation(request.form)

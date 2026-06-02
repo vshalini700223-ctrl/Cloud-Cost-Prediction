@@ -641,9 +641,9 @@
                                 {% endif %}
                                 <span class="label-text">{{ feature.label }}</span>
                             </span>
-                            <span class="range-info">{{ dataset_context.ranges[feature.field].minimum }} to {{ dataset_context.ranges[feature.field].maximum }} {{ feature.unit }}</span>
+                            <span class="range-info">Min: {{ dataset_context.ranges[feature.field].minimum }} {{ feature.unit }}</span>
                         </label>
-                        <input id="{{ feature.field }}" name="{{ feature.field }}" type="number" min="{{ dataset_context.ranges[feature.field].minimum }}" max="{{ dataset_context.ranges[feature.field].maximum }}" step="0.01" placeholder="Example: {{ feature.placeholder }}" value="{{ form[feature.field] if form else '' }}" required>
+                        <input id="{{ feature.field }}" name="{{ feature.field }}" type="number" min="{{ dataset_context.ranges[feature.field].minimum }}" step="0.01" placeholder="Example: {{ feature.placeholder }}" value="{{ form[feature.field] if form else '' }}" required>
                         <p class="hint" id="{{ feature.field }}-hint">Mapped to training column {{ feature.column }}.</p>
                     </div>
                 {% endfor %}
@@ -807,7 +807,7 @@
             vms: {
                 label: "Number of Servers",
                 placeholder: "Example: 1",
-                hint: "The model is currently trained for exactly 1 active server."
+                hint: "How many servers to run. The cost scales proportionally by the number of servers."
             },
             budget: {
                 label: "Maximum Monthly Expense",
@@ -839,7 +839,7 @@
             vms: {
                 label: "Virtual Machines (Count)",
                 placeholder: "Example: 1",
-                hint: "Server count. The dataset is currently calibrated for vm_count = 1."
+                hint: "Total virtual machine instances. Cost is estimated per VM and scaled by the instance count."
             },
             budget: {
                 label: "Monthly Budget Alert",
@@ -871,7 +871,7 @@
             vms: {
                 label: "Instance count (x₅)",
                 placeholder: "Example: 1",
-                hint: "Active virtual machine count (vm_count, mapped to vCPU). Bounded to [1]."
+                hint: "VM count (vm_count). Bounded to min 1; total cost scales linearly: C_total = N_vm * C_unit."
             },
             budget: {
                 label: "Budget Threshold (B_max)",
