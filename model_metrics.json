@@ -1,6 +1,6 @@
 {
     "dataset": {
-        "rows": 1000,
+        "rows": 5000,
         "features_used": [
             "cpu_usage",
             "memory_gb",
@@ -9,39 +9,39 @@
             "vm_count"
         ],
         "target": "cost",
-        "source_file": "Cloud_Dataset.csv",
+        "source_file": "Final_Cloud_Dataset.csv",
         "column_mappings": {
             "cpu_usage": "cpu_usage",
-            "memory_gb": "RAM_GB",
-            "storage_gb": "disk_io",
-            "bandwidth_gb": "net_io",
-            "vm_count": "vCPU",
+            "memory_gb": "memory_gb",
+            "storage_gb": "storage_gb",
+            "bandwidth_gb": "bandwidth_gb",
+            "vm_count": "vm_count",
             "cost": "cost (adapted/rebalanced)"
         },
         "feature_ranges": {
             "cpu_usage": {
                 "minimum": 0,
                 "maximum": 100,
-                "observed_minimum": 10.06,
-                "observed_maximum": 99.95
+                "observed_minimum": 8.94,
+                "observed_maximum": 100.0
             },
             "memory_gb": {
                 "minimum": 0,
-                "maximum": 3.75,
-                "observed_minimum": 1.0,
-                "observed_maximum": 3.75
+                "maximum": 4.5,
+                "observed_minimum": 0.78,
+                "observed_maximum": 4.5
             },
             "storage_gb": {
                 "minimum": 0,
-                "maximum": 999.6,
-                "observed_minimum": 101.41,
-                "observed_maximum": 999.6
+                "maximum": 1122.32,
+                "observed_minimum": 91.66,
+                "observed_maximum": 1122.32
             },
             "bandwidth_gb": {
                 "minimum": 0,
-                "maximum": 499.5,
-                "observed_minimum": 50.01,
-                "observed_maximum": 499.5
+                "maximum": 549.11,
+                "observed_minimum": 47.46,
+                "observed_maximum": 549.11
             },
             "vm_count": {
                 "minimum": 1,
@@ -153,10 +153,10 @@
             "n1-standard-1",
             "t2.micro"
         ],
-        "average_cost": 0.067952,
-        "minimum_cost": 0.020366,
-        "maximum_cost": 0.116544,
-        "average_utilization": 54.1
+        "average_cost": 0.067968,
+        "minimum_cost": 0.019978,
+        "maximum_cost": 0.124553,
+        "average_utilization": 53.95
     },
     "models": {
         "Linear Regression": {
@@ -167,38 +167,38 @@
             "cv_r2_std": 0.0
         },
         "Decision Tree": {
-            "mse": 1.4e-05,
-            "rmse": 0.003761,
-            "r2": 0.963412,
-            "cv_r2_mean": 0.96369,
-            "cv_r2_std": 0.005743
+            "mse": 6e-06,
+            "rmse": 0.002383,
+            "r2": 0.984927,
+            "cv_r2_mean": 0.987014,
+            "cv_r2_std": 0.000864
         },
         "Random Forest": {
-            "mse": 5e-06,
-            "rmse": 0.002212,
-            "r2": 0.987346,
-            "cv_r2_mean": 0.988477,
-            "cv_r2_std": 0.001375
+            "mse": 2e-06,
+            "rmse": 0.001374,
+            "r2": 0.994988,
+            "cv_r2_mean": 0.995891,
+            "cv_r2_std": 0.000308
         }
     },
     "best_model": "Linear Regression",
     "selection_note": "The selected model has the lowest RMSE on the held-out test set. Very high R2 scores are expected here because the dataset cost values closely follow structured VM pricing fields.",
     "feature_importance": [
         {
-            "feature": "bandwidth_gb",
-            "importance": 0.3882
+            "feature": "storage_gb",
+            "importance": 0.3853
         },
         {
-            "feature": "storage_gb",
-            "importance": 0.3811
+            "feature": "bandwidth_gb",
+            "importance": 0.3841
         },
         {
             "feature": "memory_gb",
-            "importance": 0.1536
+            "importance": 0.155
         },
         {
             "feature": "cpu_usage",
-            "importance": 0.0771
+            "importance": 0.0756
         },
         {
             "feature": "vm_count",

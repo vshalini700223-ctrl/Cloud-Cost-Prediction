@@ -538,8 +538,15 @@
     {% endif %}
 
     <section class="panel" style="margin-top: 16px;">
-        <span class="label">Usage tracking</span>
-        <h2>Recent Predictions</h2>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <div>
+                <span class="label">Usage tracking</span>
+                <h2 style="margin:0;">Recent Predictions</h2>
+            </div>
+            <a href="/history" style="font-size:13px; font-weight:700; color:var(--blue); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:8px 14px; background:#fff; transition:all 0.2s ease;" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--line)'">
+                View All History →
+            </a>
+        </div>
         {% if history %}
             <div class="table-wrap">
                 <table>
@@ -559,15 +566,23 @@
                     <tbody>
                         {% for item in history %}
                             <tr>
-                                <td>{{ item.timestamp }}</td>
-                                <td>{{ item.cpu_usage }}</td>
-                                <td>{{ item.memory_gb or item.memory_usage }}</td>
-                                <td>{{ item.storage_gb or item.disk_io }}</td>
-                                <td>{{ item.bandwidth_gb or item.net_io }}</td>
+                                <td style="font-size:12px; color:#64748b; font-family:monospace;">{{ item.timestamp }}</td>
+                                <td>{{ item.cpu_usage | float | round(1) }}%</td>
+                                <td>{{ (item.memory_gb or item.memory_usage) | float | round(2) }} GB</td>
+                                <td>{{ (item.storage_gb or item.disk_io) | float | round(1) }} GB</td>
+                                <td>{{ (item.bandwidth_gb or item.net_io) | float | round(1) }} GB</td>
                                 <td>{{ item.vm_count or item.vCPU }}</td>
-                                <td>${{ item.monthly_cost }}</td>
-                                <td>{% if item.monthly_budget %}${{ item.monthly_budget }}{% else %}-{% endif %}</td>
-                                <td>{{ item.budget_status or "-" }}</td>
+                                <td style="font-weight:700; color:var(--blue);">${{ item.monthly_cost | float | round(2) }}</td>
+                                <td style="color:#64748b;">{% if item.monthly_budget %}${{ item.monthly_budget | float | round(2) }}{% else %}—{% endif %}</td>
+                                <td>
+                                    {% if item.budget_status == 'Over budget' %}
+                                        <span style="display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; background:#fef2f2; color:#991b1b; border:1px solid #fecaca;">Over Budget</span>
+                                    {% elif item.budget_status == 'Within budget' %}
+                                        <span style="display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">Within Budget</span>
+                                    {% else %}
+                                        <span style="display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0;">No Budget</span>
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -577,6 +592,7 @@
             <p>No prediction history yet. Submit a prediction from the home page to create usage records.</p>
         {% endif %}
     </section>
+
 
 </main>
 <script>

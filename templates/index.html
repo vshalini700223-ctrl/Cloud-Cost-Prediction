@@ -314,6 +314,14 @@
             background: #ffffff;
             box-shadow: 0 8px 24px rgba(59, 130, 246, 0.05);
         }
+        .field.has-error {
+            border-color: var(--red);
+            background: rgba(239, 68, 68, 0.02);
+        }
+        .field.has-error:focus-within {
+            border-color: var(--red);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.05);
+        }
 
         label {
             display: flex;
@@ -451,7 +459,6 @@
             font-weight: 800;
         }
 
-        .recommendations,
         .budget {
             background: #fffbeb;
             border: 1px solid #fef3c7;
@@ -462,6 +469,123 @@
             background: #f0fdf4;
             border-color: #bbf7d0;
             color: #166534;
+        }
+
+        /* Cost Breakdown Panel */
+        .breakdown-panel {
+            margin-top: 24px;
+            border-radius: 14px;
+            padding: 22px 24px;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(226, 232, 240, 0.7);
+            box-shadow: 0 4px 20px rgba(15,23,42,0.04);
+        }
+
+        .breakdown-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 16px;
+        }
+
+        .breakdown-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .breakdown-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 64px;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .breakdown-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .breakdown-bar-track {
+            height: 8px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            overflow: hidden;
+        }
+
+        .breakdown-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .breakdown-pct {
+            font-size: 13px;
+            font-weight: 800;
+            text-align: right;
+        }
+
+        /* Suggestion Cards */
+        .suggestions-panel {
+            margin-top: 24px;
+            border-radius: 14px;
+            padding: 22px 24px;
+            background: rgba(255, 251, 235, 0.8);
+            border: 1px solid #fef3c7;
+            backdrop-filter: blur(12px);
+        }
+
+        .suggestions-panel.all-good {
+            background: rgba(240, 253, 244, 0.85);
+            border-color: #bbf7d0;
+        }
+
+        .suggestions-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 14px;
+        }
+
+        .suggestion-card {
+            border-radius: 10px;
+            padding: 13px 16px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        .suggestion-card:last-child { margin-bottom: 0; }
+
+        .suggestion-card.success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .suggestion-card.warning {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            color: #78350f;
+        }
+
+        .suggestion-card.info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            color: #0c4a6e;
+        }
+
+        .suggestion-card.summary {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            font-size: 13px;
         }
 
         .comparison {
@@ -535,11 +659,185 @@
             margin-top: 4px;
         }
 
-        .recommendations ul,
         .error ul {
             margin: 10px 0 0;
             padding-left: 20px;
             line-height: 1.5;
+        }
+
+        /* Live Cost Explorer */
+        .explorer-section {
+            margin-top: 32px;
+            border-radius: 16px;
+            padding: 26px 28px;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(226,232,240,0.8);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(15,23,42,0.04);
+        }
+
+        .explorer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .explorer-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .explorer-cost-display {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--blue);
+            letter-spacing: -0.5px;
+        }
+
+        .explorer-cost-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+            text-align: right;
+        }
+
+        .explorer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 32px;
+        }
+
+        .explorer-field label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+
+        .explorer-field label span.val {
+            color: var(--blue);
+            font-weight: 800;
+        }
+
+        .explorer-slider {
+            width: 100%;
+            height: 6px;
+            appearance: none;
+            border-radius: 999px;
+            background: var(--line);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .explorer-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--blue);
+            box-shadow: 0 2px 6px rgba(59,130,246,0.35);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .explorer-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .explorer-bar-row {
+            display: grid;
+            grid-template-columns: 90px 1fr 48px;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .explorer-bar-label { font-size: 12px; font-weight: 700; color: var(--ink); }
+        .explorer-bar-track { height: 7px; border-radius: 999px; background: #f1f5f9; overflow: hidden; }
+        .explorer-bar-fill { height: 100%; border-radius: 999px; transition: width 0.3s ease; }
+        .explorer-bar-pct { font-size: 12px; font-weight: 800; text-align: right; }
+
+        .explorer-use-btn {
+            margin-top: 18px;
+            border: 1.5px solid var(--blue);
+            background: transparent;
+            color: var(--blue);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .explorer-use-btn:hover { background: var(--blue); color: #fff; transform: translateY(-1px); }
+
+        /* Provider comparison */
+        .provider-section {
+            margin-top: 28px;
+            border-radius: 14px;
+            padding: 22px 24px;
+            background: rgba(240,249,255,0.8);
+            border: 1px solid #bae6fd;
+            backdrop-filter: blur(12px);
+        }
+
+        .provider-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 14px;
+        }
+
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .provider-card {
+            background: #fff;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            padding: 14px 16px;
+            transition: transform 0.2s;
+        }
+        .provider-card:hover { transform: translateY(-2px); }
+        .provider-card .prov-name { font-size: 12px; font-weight: 800; color: #0369a1; }
+        .provider-card .prov-region { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .provider-card .prov-type { font-size: 11px; color: var(--muted); }
+        .provider-card .prov-cost { font-size: 20px; font-weight: 800; color: var(--ink); margin-top: 8px; }
+        .provider-card .prov-monthly { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        /* Print / export */
+        .print-btn {
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--ink);
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .print-btn:hover { border-color: var(--blue); color: var(--blue); transform: translateY(-1px); }
+
+        @media print {
+            nav, .hero, .explorer-section, #opt-unlock-btn, .print-btn, .preset-button, .user-level-container { display: none !important; }
+            body { background: #fff !important; }
+            .results-col { box-shadow: none !important; border: 1px solid #ccc !important; }
+            .breakdown-panel, .suggestions-panel, .budget, .provider-section { break-inside: avoid; }
         }
 
         .error {
@@ -599,63 +897,22 @@
             color: var(--ink);
         }
 
-        .model-predictions-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .model-pred-card {
-            padding: 16px;
-            border-radius: 10px;
-            background: #ffffff;
-            border: 1px solid var(--line);
-            position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
-            transition: all 0.2s ease;
-        }
-        .model-pred-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-        }
-        .model-pred-card.best {
-            border-color: var(--green);
-            background: rgba(16, 185, 129, 0.015);
-        }
-
-        .model-pred-card span.model-name {
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-
-        .model-pred-card strong.model-val {
-            display: block;
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--ink);
-        }
-        .model-pred-card.best strong.model-val {
-            color: var(--green);
-        }
-
-        .model-pred-card span.model-monthly {
-            display: block;
-            font-size: 13px;
-            color: var(--muted);
-            margin-top: 6px;
-        }
-
         @media (max-width: 920px) {
             .hero,
             form,
             .cost-grid,
             .steps,
             .comparison-grid,
-            .dataset-grid,
-            .model-predictions-grid {
+            .dataset-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .breakdown-row {
+                grid-template-columns: 100px 1fr 56px;
+                gap: 8px;
+            }
+
+            .explorer-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -667,13 +924,14 @@
     </style>
 </head>
 <body>
-<main>
+<main id="main-content" data-coefs='{{ model_coefs | tojson if model_coefs else '{"cpu":0.0001,"memory":0.004,"storage":0.00005,"bandwidth":0.0001}' }}'>
     <nav>
         <div class="brand">
             <span class="brand-mark">$</span>
             <span>Cloud Cost Planner</span>
         </div>
         <div class="nav-actions">
+            <a class="nav-link" href="/history">History</a>
             <a class="nav-link" href="/dashboard">Dashboard</a>
         </div>
     </nav>
@@ -748,7 +1006,7 @@
 
             <form action="/predict" method="post">
                 {% for feature in dataset_context.features %}
-                    <div class="field">
+                    <div class="field {% if errors and errors[feature.field] %}has-error{% endif %}">
                         <label for="{{ feature.field }}">
                             <span class="label-text-container">
                                 {% if feature.field == 'cpu' %}
@@ -767,11 +1025,14 @@
                             <span class="range-info">Min: {{ dataset_context.ranges[feature.field].minimum }} {{ feature.unit }}</span>
                         </label>
                         <input id="{{ feature.field }}" name="{{ feature.field }}" type="number" min="{{ dataset_context.ranges[feature.field].minimum }}" step="0.01" placeholder="Example: {{ feature.placeholder }}" value="{{ form[feature.field] if form else '' }}" required>
+                        {% if errors and errors[feature.field] %}
+                            <p class="field-error-msg" style="color: var(--red); font-size: 13px; font-weight: 700; margin: 6px 0 0;">⚠️ {{ errors[feature.field] }}</p>
+                        {% endif %}
                         <p class="hint" id="{{ feature.field }}-hint">Mapped to training column {{ feature.column }}.</p>
                     </div>
                 {% endfor %}
 
-                <div class="field">
+                <div class="field {% if errors and errors['budget'] %}has-error{% endif %}">
                     <label for="budget">
                         <span class="label-text-container">
                             <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
@@ -779,7 +1040,10 @@
                         </span>
                         <span class="range-info">optional</span>
                     </label>
-                    <input id="budget" name="budget" type="number" min="0" step="0.01" placeholder="Example: 35" value="{{ form.budget if form else '' }}">
+                    <input id="budget" name="budget" type="number" min="0" step="0.01" placeholder="Example: 35" value="{{ form.get('budget', '') if form else '' }}">
+                    {% if errors and errors['budget'] %}
+                        <p class="field-error-msg" style="color: var(--red); font-size: 13px; font-weight: 700; margin: 6px 0 0;">⚠️ {{ errors['budget'] }}</p>
+                    {% endif %}
                     <p class="hint" id="budget-hint">Used only for budget alert; it does not affect prediction.</p>
                 </div>
 
@@ -790,8 +1054,15 @@
 
             {% if prediction is defined %}
                 <div class="result">
-                    <span class="result-value">${{ prediction }}</span>
-                    Estimated hourly cloud cost.
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                        <div>
+                            <span class="result-value">${{ prediction }}</span>
+                            Estimated hourly cloud cost.
+                        </div>
+                        <button class="print-btn" onclick="window.print()" title="Print / Save as PDF">
+                            🖨 Print / Save PDF
+                        </button>
+                    </div>
                     <div class="cost-grid">
                         <div class="metric-card">
                             <span>Hourly</span>
@@ -809,71 +1080,205 @@
                 </div>
             {% endif %}
 
-            {% if model_predictions %}
-                <div class="comparison" style="margin-top: 24px; padding: 24px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(12px);">
-                    <h3 style="margin-bottom: 16px; font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Side-by-Side Model Comparison</h3>
-                    <div class="model-predictions-grid">
-                        {% for name, val in model_predictions.items() %}
-                            <div class="model-pred-card {% if name == best_model_name %}best{% endif %}">
-                                {% if name == best_model_name %}
-                                    <span style="position: absolute; top: -10px; right: 12px; background: var(--green); color: white; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);">Best Model</span>
-                                {% endif %}
-                                <span class="model-name">{{ name }}</span>
-                                <strong class="model-val">${{ val }}/hr</strong>
-                                <span class="model-monthly">Monthly: ${{ (val * 24 * 30) | round(2) }}</span>
+
+
+            {% if prediction is defined %}
+
+                {# ── Cost Contribution Breakdown ─────────────────────────────── #}
+                {% if cost_breakdown %}
+                <div class="breakdown-panel">
+                    <div class="breakdown-title">Cost Contribution Breakdown</div>
+                    <div class="breakdown-rows" id="breakdown-rows">
+                        {% set bd_items = [
+                            ('Memory (RAM)', 'memory',    '#8b5cf6'),
+                            ('Storage',      'storage',   '#0ea5e9'),
+                            ('CPU Usage',    'cpu',       '#f59e0b'),
+                            ('Bandwidth',    'bandwidth', '#10b981')
+                        ] %}
+                        {% for label, key, color in bd_items %}
+                            {% if cost_breakdown[key] is defined %}
+                            <div class="breakdown-row">
+                                <span class="breakdown-label">{{ label }}</span>
+                                <div class="breakdown-bar-track">
+                                    <div class="breakdown-bar-fill"
+                                         data-pct="{{ cost_breakdown[key].pct }}"
+                                         data-color="{{ color }}"></div>
+                                </div>
+                                <span class="breakdown-pct"
+                                      data-color="{{ color }}">{{ cost_breakdown[key].pct }}%</span>
                             </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 </div>
-            {% endif %}
+                <script>
+                    // Apply data-color / data-pct as real CSS — avoids Jinja-in-style linter warnings
+                    document.querySelectorAll('.breakdown-bar-fill[data-pct]').forEach(function(el) {
+                        el.style.width = el.dataset.pct + '%';
+                        el.style.background = el.dataset.color;
+                    });
+                    document.querySelectorAll('.breakdown-pct[data-color]').forEach(function(el) {
+                        el.style.color = el.dataset.color;
+                    });
+                </script>
+                {% endif %}
 
-            {% if budget_status %}
-                <div class="budget {% if not budget_status.is_over %}good{% endif %}">
-                    <strong>{{ budget_status.status }}</strong>
-                    <p style="margin: 6px 0 0;">{{ budget_status.message }}</p>
-                </div>
 
-                {% if recommendations %}
-                    <div class="recommendations">
-                        <strong>Optimization suggestions</strong>
-                        <ul>
+                {# ── Budget status ────────────────────────────────────────────── #}
+                {% if budget_status %}
+                    <div class="budget {% if not budget_status.is_over %}good{% endif %}">
+                        <strong>{{ budget_status.status }}</strong>
+                        <p style="margin: 6px 0 0;">{{ budget_status.message }}</p>
+                    </div>
+
+                    {# ── Suggestions panel ──────────────────────────────────────── #}
+                    {% if recommendations %}
+                        {% set is_all_good = (recommendations | length == 1 and recommendations[0].type == 'success') %}
+                        <div class="suggestions-panel {% if is_all_good %}all-good{% endif %}">
+                            <div class="suggestions-title">Cloud Cost Intelligence</div>
                             {% for item in recommendations %}
-                                <li>{{ item }}</li>
+                                <div class="suggestion-card {{ item.type }}">
+                                    {{ item.text | safe }}
+                                </div>
                             {% endfor %}
-                        </ul>
+                        </div>
+                    {% endif %}
+
+                {% else %}
+                    {# ── No budget: show unlock CTA ──────────────────────────────── #}
+                    <div style="margin-top: 24px;">
+                        <button id="opt-unlock-btn" class="preset-button" type="button"
+                            style="border-color: var(--amber); color: var(--amber); font-weight: 700; width: 100%; justify-content: center; display: inline-flex; padding: 12px 16px;">
+                            💡 Do you want optimization suggestions?
+                        </button>
+                        <div id="opt-unlock-msg" class="suggestions-panel" style="display: none; margin-top: 14px;">
+                            <div class="suggestion-card info">
+                                <strong>Unlock Smart Suggestions</strong><br>
+                                Enter your <strong>Monthly Budget Alert</strong> above and click <strong>Predict Cost</strong> again.
+                                Our AI advisor will analyse your resource cost breakdown and generate targeted, proportional
+                                recommendations to fit your exact budget.
+                            </div>
+                        </div>
                     </div>
                 {% endif %}
-            {% else %}
-                <div style="margin-top: 24px;">
-                    <button id="opt-unlock-btn" class="preset-button" type="button" style="border-color: var(--amber); color: var(--amber); font-weight: 700; width: 100%; justify-content: center; display: inline-flex; padding: 12px 16px;">Do you want optimization suggestions?</button>
-                    <div id="opt-unlock-msg" class="recommendations" style="display: none; margin-top: 14px; background: #fffbeb; border-color: #fef3c7; color: #92400e;">
-                        <strong>Unlock Suggestions</strong>
-                        <p style="margin: 6px 0 0;">Please enter your monthly budget to unlock optimization suggestions.</p>
+
+                {# ── Provider Comparison ────────────────────────────────────── #}
+                {% if provider_comparison %}
+                <div class="provider-section">
+                    <div class="provider-title">☁ Similar Configurations from Dataset</div>
+                    <div class="provider-grid">
+                        {% for option in provider_comparison %}
+                        <div class="provider-card">
+                            <div class="prov-name">{{ option.provider }}</div>
+                            <div class="prov-region">📍 {{ option.region }}</div>
+                            <div class="prov-type">{{ option.vm_type }}</div>
+                            <div class="prov-cost">${{ option.hourly }}/hr</div>
+                            <div class="prov-monthly">${{ option.monthly }}/mo</div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
+                {% endif %}
+
             {% endif %}
 
 
 
 
             {% if error %}
-                <div class="error">{{ error }}</div>
+                <div class="error" style="border-radius:12px; padding:16px 20px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; font-size:14px;">
+                    ⚠️ {{ error }}
+                </div>
             {% endif %}
 
             {% if errors %}
-                <div class="error">
-                    Please fix these inputs:
-                    <ul>
-                        {% for item in errors %}
-                            <li>{{ item }}</li>
+                <div style="border-radius:12px; padding:16px 20px; background:#fef2f2; border:1px solid #fecaca; margin-bottom:4px;">
+                    <div style="font-size:12px; font-weight:800; color:#991b1b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">⚠️ Please fix the following inputs</div>
+                    {% if errors is mapping %}
+                        {% for field, msg in errors.items() %}
+                            {% set label = field | capitalize %}
+                            {% if field == 'cpu' %}{% set label = 'CPU' %}
+                            {% elif field == 'vms' %}{% set label = 'Virtual machines' %}
+                            {% endif %}
+                            <div style="background:#fff; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; margin-bottom:6px; font-size:13.5px; color:#7f1d1d;">
+                                <strong>{{ label }}:</strong> {{ msg }}
+                            </div>
                         {% endfor %}
-                    </ul>
+                    {% else %}
+                        {% for item in errors %}
+                            <div style="background:#fff; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; margin-bottom:6px; font-size:13.5px; color:#7f1d1d;">{{ item }}</div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             {% endif %}
         </section>
     </section>
+
+    {# ── Live Cost Explorer ─────────────────────────────────────── #}
+    <div class="explorer-section" id="live-explorer">
+        <div class="explorer-header">
+            <div>
+                <div class="explorer-title">🔬 Live Cost Explorer</div>
+                <div style="font-size:13px; color:var(--muted); margin-top:4px;">Drag sliders to explore costs in real-time — no form submission needed.</div>
+            </div>
+            <div style="text-align:right;">
+                <div class="explorer-cost-display" id="explorer-cost">$0.0000/hr</div>
+                <div class="explorer-cost-sub" id="explorer-monthly">$0.00 / month</div>
+            </div>
+        </div>
+
+        <div class="explorer-grid">
+            <div class="explorer-field">
+                <label for="exp-cpu">CPU Usage <span class="val" id="exp-cpu-val">50%</span></label>
+                <input type="range" class="explorer-slider" id="exp-cpu" min="1" max="100" value="50" step="1">
+            </div>
+            <div class="explorer-field">
+                <label for="exp-memory">Memory (RAM) <span class="val" id="exp-memory-val">2 GB</span></label>
+                <input type="range" class="explorer-slider" id="exp-memory" min="0.1" max="128" value="2" step="0.1">
+            </div>
+            <div class="explorer-field">
+                <label for="exp-storage">Storage <span class="val" id="exp-storage-val">100 GB</span></label>
+                <input type="range" class="explorer-slider" id="exp-storage" min="1" max="2000" value="100" step="1">
+            </div>
+            <div class="explorer-field">
+                <label for="exp-bandwidth">Bandwidth <span class="val" id="exp-bandwidth-val">100 GB</span></label>
+                <input type="range" class="explorer-slider" id="exp-bandwidth" min="1" max="2000" value="100" step="1">
+            </div>
+            <div class="explorer-field" style="grid-column: span 2;">
+                <label for="exp-vms">Virtual Machines <span class="val" id="exp-vms-val">1</span></label>
+                <input type="range" class="explorer-slider" id="exp-vms" min="1" max="150" value="1" step="1">
+            </div>
+        </div>
+
+        {# Cost breakdown bars — updated live by JS #}
+        <div style="margin-top:22px; border-top:1px solid var(--line); padding-top:18px;">
+            <div style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:12px;">Cost Contribution</div>
+            {% for label, id_suffix, color in [
+                ('Memory (RAM)', 'memory', '#8b5cf6'),
+                ('Storage',      'storage', '#0ea5e9'),
+                ('CPU Usage',    'cpu',     '#f59e0b'),
+                ('Bandwidth',    'bandwidth','#10b981')
+            ] %}
+            <div class="explorer-bar-row">
+                <span class="explorer-bar-label">{{ label }}</span>
+                <div class="explorer-bar-track">
+                    <div class="explorer-bar-fill" id="exp-bar-{{ id_suffix }}"
+                         data-color="{{ color }}"></div>
+                </div>
+                <span class="explorer-bar-pct" id="exp-pct-{{ id_suffix }}"
+                      data-color="{{ color }}">0%</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button class="explorer-use-btn" onclick="fillFormFromExplorer()">
+            ↗ Use these values in the form
+        </button>
+    </div>
 </main>
 <script>
+    const MODEL_COEFS = JSON.parse(document.getElementById('main-content').dataset.coefs);
+
     const presetRanges = {
         small: {
             cpu: [10, 40],
@@ -1076,8 +1481,62 @@
         });
     });
 
-    // Initialize user level on load
+    // ── Live Cost Explorer ──────────────────────────────────────────────────
+    function calcExplorerCost() {
+        const cpu       = parseFloat(document.getElementById('exp-cpu').value) || 0;
+        const memory    = parseFloat(document.getElementById('exp-memory').value) || 0;
+        const storage   = parseFloat(document.getElementById('exp-storage').value) || 0;
+        const bandwidth = parseFloat(document.getElementById('exp-bandwidth').value) || 0;
+        const vms       = parseFloat(document.getElementById('exp-vms').value) || 1;
+
+        document.getElementById('exp-cpu-val').textContent       = cpu + '%';
+        document.getElementById('exp-memory-val').textContent    = memory + ' GB';
+        document.getElementById('exp-storage-val').textContent   = storage + ' GB';
+        document.getElementById('exp-bandwidth-val').textContent = bandwidth + ' GB';
+        document.getElementById('exp-vms-val').textContent       = vms;
+
+        const cpuCost  = cpu       * MODEL_COEFS.cpu;
+        const memCost  = memory    * MODEL_COEFS.memory;
+        const stoCost  = storage   * MODEL_COEFS.storage;
+        const bwCost   = bandwidth * MODEL_COEFS.bandwidth;
+        const totalHr  = (cpuCost + memCost + stoCost + bwCost) * vms;
+        const monthly  = totalHr * 24 * 30;
+
+        document.getElementById('explorer-cost').textContent   = '$' + totalHr.toFixed(4) + '/hr';
+        document.getElementById('explorer-monthly').textContent = '$' + monthly.toFixed(2) + ' / month';
+
+        const unitTotalHr = cpuCost + memCost + stoCost + bwCost;
+        const costs = { cpu: cpuCost, memory: memCost, storage: stoCost, bandwidth: bwCost };
+        const colors = { cpu: '#f59e0b', memory: '#8b5cf6', storage: '#0ea5e9', bandwidth: '#10b981' };
+
+        Object.keys(costs).forEach(key => {
+            const pct = unitTotalHr > 0 ? (costs[key] / unitTotalHr * 100).toFixed(1) : 0;
+            const bar = document.getElementById('exp-bar-' + key);
+            const label = document.getElementById('exp-pct-' + key);
+            if (bar) { bar.style.width = pct + '%'; bar.style.background = colors[key]; }
+            if (label) { label.textContent = pct + '%'; label.style.color = colors[key]; }
+        });
+    }
+
+    function fillFormFromExplorer() {
+        document.getElementById('cpu').value       = document.getElementById('exp-cpu').value;
+        document.getElementById('memory').value    = document.getElementById('exp-memory').value;
+        document.getElementById('storage').value   = document.getElementById('exp-storage').value;
+        document.getElementById('bandwidth').value = document.getElementById('exp-bandwidth').value;
+        document.getElementById('vms').value       = document.getElementById('exp-vms').value;
+        document.getElementById('cpu').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    ['exp-cpu', 'exp-memory', 'exp-storage', 'exp-bandwidth', 'exp-vms'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', calcExplorerCost);
+        }
+    });
+
+    // Initialize on load
     document.addEventListener("DOMContentLoaded", () => {
+        calcExplorerCost();
         const savedLevel = localStorage.getItem("userLevel") || "intermediate";
         setUserLevel(savedLevel);
 
