@@ -1,4 +1,4 @@
-import csv
+import sqlite3
 import json
 from pathlib import Path
 from datetime import datetime
@@ -15,8 +15,35 @@ MODEL_PATH = Path("model.pkl")
 METRICS_PATH = Path("model_metrics.json")
 DATASET_PATH = Path("Final_Cloud_Dataset.csv")
 PREPARED_DATASET_PATH = Path("prepared_training_dataset.csv")
-HISTORY_PATH = Path("prediction_history.csv")
+DB_PATH = Path("predictions.db")
 DATASET_CONTEXT = None
+
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS predictions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            cpu_usage REAL,
+            memory_gb REAL,
+            storage_gb REAL,
+            bandwidth_gb REAL,
+            vm_count REAL,
+            monthly_budget REAL,
+            hourly_cost REAL,
+            daily_cost REAL,
+            monthly_cost REAL,
+            budget_status TEXT,
+            recommendations TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+init_db()
 
 
 def get_active_dataset_path():
@@ -144,45 +171,62 @@ def load_dataset_context():
 
 
 def load_history(limit=50):
-    if not HISTORY_PATH.exists():
+    if not DB_PATH.exists():
         return []
-
-    with open(HISTORY_PATH, "r", encoding="utf-8", newline="") as file:
-        rows = list(csv.DictReader(file))
-
-    return list(reversed(rows))[:limit]
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT timestamp, cpu_usage, memory_gb, storage_gb, bandwidth_gb, vm_count,
+                   monthly_budget, hourly_cost, daily_cost, monthly_cost, budget_status, recommendations
+            FROM predictions
+            ORDER BY id DESC
+            LIMIT ?
+        """, (limit,))
+        rows = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return rows
+    except Exception:
+        return []
 
 
 def save_prediction(form, cost_summary, recommendations, budget_status):
-    file_exists = HISTORY_PATH.exists()
-    fieldnames = [
-        "timestamp",
-        *FEATURE_COLUMNS,
-        "monthly_budget",
-        "hourly_cost",
-        "daily_cost",
-        "monthly_cost",
-        "budget_status",
-        "recommendations",
-    ]
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
 
-    with open(HISTORY_PATH, "a", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow({
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            **{feature["column"]: form.get(feature["field"], "") for feature in FEATURES},
-            "monthly_budget": form.get("budget", ""),
-            "hourly_cost": cost_summary["hourly"],
-            "daily_cost": cost_summary["daily"],
-            "monthly_cost": cost_summary["monthly"],
-            "budget_status": budget_status["status"] if budget_status else "",
-            "recommendations": " | ".join(
-                r["text"] if isinstance(r, dict) else r
-                for r in recommendations
-            ),
-        })
+        cpu = float(form.get("cpu", 0))
+        memory = float(form.get("memory", 0))
+        storage = float(form.get("storage", 0))
+        bandwidth = float(form.get("bandwidth", 0))
+        vms = float(form.get("vms", 1))
+        budget = float(form.get("budget", 0)) if form.get("budget", "").strip() else None
+
+        rec_text = " | ".join(
+            r["text"] if isinstance(r, dict) else r
+            for r in recommendations
+        )
+
+        cursor.execute("""
+            INSERT INTO predictions (
+                timestamp, cpu_usage, memory_gb, storage_gb, bandwidth_gb, vm_count,
+                monthly_budget, hourly_cost, daily_cost, monthly_cost, budget_status, recommendations
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            cpu, memory, storage, bandwidth, vms,
+            budget,
+            cost_summary["hourly"],
+            cost_summary["daily"],
+            cost_summary["monthly"],
+            budget_status["status"] if budget_status else "",
+            rec_text
+        ))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Database error: {e}")
 
 
 def build_cost_summary(predicted_cost):
