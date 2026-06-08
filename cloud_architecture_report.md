@@ -1,27 +1,44 @@
-# Cloud Cost Predictor - Cloud Architecture & Class Slides Alignment Report
+# Cloud Cost Predictor - Simplified Cloud Architecture & Class Slides Report
 
-This document maps the **Cloud Cost Prediction System** directly to the topics, terminology, and core concepts covered in your **Cloud Computing Lecture Slides** (Weeks 1 to 5) taught by your instructor.
+This document explains how our **Cloud Cost Prediction System** works in the cloud, mapped directly to what you learned in your Cloud Computing classes (Weeks 1 to 5). It uses simple terms so you can easily understand and explain it to your teacher.
 
 ---
 
-## 🗺️ Part 1: Slide Key Terms Mapped to Our Implementation
+## 🗺️ Part 1: Course Keywords Explained Simply
 
-Below are the exact key terms from your course slides (Weeks 1 to 5) and how they are implemented in our project:
+Here is how the main keywords from your slides are actually used in our project:
 
-| Slide Key Term | Slide Source | Project Implementation Details |
+| Keyword from Slides | What it Means in Plain English | How We Implemented It |
 | :--- | :--- | :--- |
-| **Measured Service / Utility Computing** | Week 1 & Week 5 Lecture 10 | John McCarthy's 1961 vision of "computation provisioned as a utility". Our system is a **predictive metering engine** for a measured service. It takes hardware metrics (vCPU, RAM, storage, network bandwidth) and models how public cloud providers calculate utility costs. |
-| **Scalable Computing / Dynamic Resizing** | Week 3 Lecture 5 | Defined as the "dynamic resizing of the available computing resources (processing, memory, bandwidth, storage etc.) with demand". Our interface allows users to slide resources up/down dynamically, predicting how these changes scale the hourly cost. |
-| **Virtual Clusters** | Week 4 Lecture 8 | "Several VMs hosted on a physical cluster". Handled in the frontend and backend through the `vm_count` and `vms` parameters. The model projects the cost for a cluster of VMs working in parallel. |
-| **Over-provisioning & Under-provisioning** | Week 5 Lecture 10 | Explains the financial and operational risks of: <br>• *Over-provisioning*: Buying/renting too much capacity, resulting in wasted budget.<br>• *Under-provisioning*: Renting inadequate capacity, resulting in server saturation and service crashes.<br>Our **Cloud Cost Intelligence Engine** alerts users if their configuration is too large (wasting money) or too small (crashing under load). |
-| **TCP/IP Protocol Stack** | Week 2/3 Lecture 4 | We configured the networking layers, ports, and firewall rules to allow Web traffic (HTTP/TCP port 5000 / 80) to route securely into the VM container. |
-| **Decoupled Architecture & State Separation** | Week 5 Lecture 11 | Separating compute nodes from storage. We have **fully implemented** this by separating our Flask Web servers from a central, managed PostgreSQL database on Render. This allows us to scale web servers horizontally while keeping data synced. |
+| **Measured Service / Utility Computing** | Paying for cloud resources like a utility bill (just like paying for water or electricity based on how much you consume). | Our application takes CPU, RAM, and Storage numbers and calculates (predicts) the exact utility cost that cloud providers would bill you. |
+| **Dynamic Resizing / Elasticity** | Changing the size of your server (making CPU, RAM, or storage bigger or smaller) whenever your traffic changes. | Our slider controls let users change CPU/RAM dynamically. The application instantly predicts how this resizing changes the monthly price. |
+| **Virtual Clusters** | Running multiple Virtual Machines (VMs) together as a team to handle heavy workloads. | We added a **VM Count** slider in the app. The app automatically calculates the total cost of running a cluster of several VMs. |
+| **Over-provisioning** | Wasting money by buying a server that is way too big for your actual needs. | Our **Optimization Advisor** checks your inputs. If your server is too big, it warns you: *"You are over-provisioned (wasting money). Swap to a smaller size to save money!"* |
+| **Under-provisioning** | Saving money but renting a server that is too small, causing the site to crash under heavy load. | If your inputs are dangerously low (e.g., too little RAM for heavy workloads), the advisor warns you that your server might crash. |
+| **Decoupled Architecture** | Separating the web application (the brain) from the database (the memory) so they run on completely separate servers. | We moved our database from a local file (SQLite) to a separate cloud database (PostgreSQL on Render). Now, if the web server crashes, no data is lost because the database is separate! |
 
 ---
 
 ## 🏗️ Part 2: Cloud Architecture Design ("Hissab" vs. "Behisaab")
 
-Even in the cloud, resources are not truly infinite. Every system starts with boundaries ("Hissab" - accounting). Below is the design of our starting workload baseline and how it scales for future growth.
+In cloud computing, nothing is truly infinite ("Behisaab"). Every system has limits ("Hissab") that we must plan for. Here is our starting plan and how we grow in the future.
+
+### 1. Where the Story Begins (Our Baseline)
+Our system is designed to support **1,000 active users** making up to 10 predictions per hour.
+* **The Server**: 1 Virtual Machine (VM) on the cloud (like AWS `t3.micro`) with **2 CPUs** and **1 GB RAM**.
+* **The Storage**: **20 GB SSD Disk** (used to store the operating system and run the app).
+* **The Network**: Hard limit of **10 GB / month** of outgoing data (downloads/visits).
+
+### 2. The Hard Physical Limits ("Hissab")
+Even in the cloud, a cheap VM has strict physical boundaries:
+* **RAM Limit (1 GB)**: If our web server uses more than 1 GB of memory, the operating system will immediately crash the app to save itself (this is called an **OOM crash** or Out-Of-Memory crash).
+* **CPU Credits**: Cheap cloud VMs are "burstable". They work fast for short periods, but if they are under heavy load for too long, the cloud provider slows the CPU down to 10% speed.
+
+---
+
+## 🛜 Part 3: How the Network Works (The Protocol Stack)
+
+We set up our network rules based on the standard **TCP/IP stack** (the communication layers):
 
 ```mermaid
 graph TD
@@ -39,49 +56,17 @@ graph TD
     end
 ```
 
-### 1. The Starting Baseline (Where the Story Begins)
-* **Initial Client Workload**: Structured to support **1,000 active users** making up to 10 predictions per hour.
-* **Compute Instance**: 1 VM instance (AWS `t3.micro` or GCP `e2-micro`) with **2 vCPUs** and **1 GB RAM**.
-* **Storage Allocation**: **20 GB SSD** (holds the operating system and Docker container, while history data is pushed to the database).
-* **Network Egress Limits**: Hard capped at **10 GB / month** of outgoing data.
-
-### 2. Physical & Technical Limits ("Hissab")
-Even on the cloud, a `t3.micro` instance has strict physical thresholds:
-* **Memory Limit**: 1 GB RAM. If memory usage exceeds this, the OS Out-of-Memory (OOM) killer will immediately terminate the Flask server.
-* **CPU Credits**: Low-tier VMs use a burstable CPU credit system. If the system is under constant high load, credits deplete, and the CPU speed is throttled to 10% performance.
-* **Bandwidth Limit**: Network capacity is throttled to a maximum of 5 Gbps burst speed.
+1. **Virtual Private Cloud (VPC)**: This is our private sandbox network in the cloud. Nobody can access it unless we allow them.
+2. **Public Subnet (Web Server)**: The web server runs here. We opened **Port 80/443 (HTTP/HTTPS)** so users on the internet can visit the website.
+3. **Private Subnet (Database)**: Our PostgreSQL database runs here. It is completely locked and invisible to the public internet. Only our web servers are allowed to talk to it.
+4. **Reliable Communication (TCP)**: Client requests and predictions are sent over **TCP** to make sure no data gets lost along the way.
 
 ---
 
-## 🛜 Part 3: Network Architecture & Protocols (Lecture 4 Protocol Stack)
+## 📈 Part 4: How We Scale Up in the Future
 
-Our network configuration is built on the standard **TCP/IP Protocol Stack** layers discussed in Week 2/3 Lecture 4:
+If our user base grows from **1,000 to 100,000+ users**, we scale up using three steps:
 
-1. **Physical & Link Layer**: Under the hood, public fiber networks connect Render or AWS data centers to the internet.
-2. **Network Layer (IP/Routing)**: 
-   * We deploy our app inside a **Virtual Private Cloud (VPC)**.
-   * **Subnet Partitioning**: The Web App runs in a **Public Subnet** (accessible to the internet), while our database runs in a **Private Subnet** (hidden from the public internet).
-   * **Firewalls & Security Groups**: The firewall blocks all inbound traffic except **Port 80/443 (HTTP/HTTPS)** and **Port 22 (SSH)**.
-3. **Transport Layer (TCP)**: 
-   * Uses **TCP** (Transmission Control Protocol) to ensure reliable, connection-oriented data transfer. Client requests and server predictions must arrive error-free.
-4. **Application Layer**: 
-   * Runs the **HTTP/HTTPS** protocols to serve HTML templates, JSON API predictions, and database query results.
-
----
-
-## 📈 Part 4: Future Growth & Decoupled State Scaling
-
-By default, hosting databases locally on the web server (like local SQLite or CSV files) creates stateful web servers. If you scale to 5 or 10 servers, each server will have its own separate history, and if a server crashes, its data is lost.
-
-To solve this, we implemented **Database Separation of Concerns**:
-
-1. **State Isolation**:
-   * We separated the web application from the database. The Flask application is now **stateless**.
-   * All user prediction logs and history are saved to a separate, managed **PostgreSQL** database resource.
-2. **Horizontal Auto-Scaling**:
-   * Since the Flask servers are stateless, we can safely scale horizontally (e.g., from 1 web instance to 5, 10, or 100).
-   * An **Elastic Load Balancer (ELB)** distributes user traffic round-robin among the stateless instances.
-   * Every instance reads and writes to the same centralized PostgreSQL database, keeping data perfectly synced for all users.
-3. **Fault Tolerance**:
-   * If Web Instance #1 runs out of RAM (OOM) and crashes, the Load Balancer instantly reroutes traffic to Web Instance #2.
-   * Because the database is hosted independently, no data is lost during web server crashes.
+1. **Load Balancer**: We put a Load Balancer at the front door. When a user visits, it redirects them to the server that is least busy.
+2. **Horizontal Scaling**: Instead of one server, we run a cluster of 5 or 10 servers. If traffic spikes, Render/AWS automatically starts up new servers to help.
+3. **Centralized Database**: Because we separated our database (PostgreSQL), all web servers talk to the same database. This keeps all prediction history perfectly synchronized for all users, no matter which server they are connected to!
