@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import os
 from pathlib import Path
 from datetime import datetime
 
@@ -19,28 +20,95 @@ DB_PATH = Path("predictions.db")
 DATASET_CONTEXT = None
 
 
+def execute_query(query, params=(), fetch=False, fetch_all=True):
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        query = query.replace("?", "%s")
+        conn = psycopg2.connect(database_url)
+        try:
+            with conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                    cursor.execute(query, params)
+                    if fetch:
+                        if fetch_all:
+                            return [dict(row) for row in cursor.fetchall()]
+                        else:
+                            row = cursor.fetchone()
+                            return dict(row) if row else None
+            return None
+        finally:
+            conn.close()
+    else:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        try:
+            with conn:
+                cursor = conn.cursor()
+                cursor.execute(query, params)
+                if fetch:
+                    if fetch_all:
+                        return [dict(row) for row in cursor.fetchall()]
+                    else:
+                        row = cursor.fetchone()
+                        return dict(row) if row else None
+            return None
+        finally:
+            conn.close()
+
+
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS predictions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            cpu_usage REAL,
-            memory_gb REAL,
-            storage_gb REAL,
-            bandwidth_gb REAL,
-            vm_count REAL,
-            monthly_budget REAL,
-            hourly_cost REAL,
-            daily_cost REAL,
-            monthly_cost REAL,
-            budget_status TEXT,
-            recommendations TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        import psycopg2
+        conn = psycopg2.connect(database_url)
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS predictions (
+                            id SERIAL PRIMARY KEY,
+                            timestamp VARCHAR(50),
+                            cpu_usage REAL,
+                            memory_gb REAL,
+                            storage_gb REAL,
+                            bandwidth_gb REAL,
+                            vm_count REAL,
+                            monthly_budget REAL,
+                            hourly_cost REAL,
+                            daily_cost REAL,
+                            monthly_cost REAL,
+                            budget_status VARCHAR(100),
+                            recommendations TEXT
+                        )
+                    """)
+        finally:
+            conn.close()
+    else:
+        conn = sqlite3.connect(DB_PATH)
+        try:
+            with conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS predictions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        timestamp TEXT,
+                        cpu_usage REAL,
+                        memory_gb REAL,
+                        storage_gb REAL,
+                        bandwidth_gb REAL,
+                        vm_count REAL,
+                        monthly_budget REAL,
+                        hourly_cost REAL,
+                        daily_cost REAL,
+                        monthly_cost REAL,
+                        budget_status TEXT,
+                        recommendations TEXT
+                    )
+                """)
+        finally:
+            conn.close()
 
 
 init_db()
@@ -171,31 +239,25 @@ def load_dataset_context():
 
 
 def load_history(limit=50):
-    if not DB_PATH.exists():
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url and not DB_PATH.exists():
         return []
     try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("""
+        rows = execute_query("""
             SELECT timestamp, cpu_usage, memory_gb, storage_gb, bandwidth_gb, vm_count,
                    monthly_budget, hourly_cost, daily_cost, monthly_cost, budget_status, recommendations
             FROM predictions
             ORDER BY id DESC
             LIMIT ?
-        """, (limit,))
-        rows = [dict(row) for row in cursor.fetchall()]
-        conn.close()
-        return rows
-    except Exception:
+        """, (limit,), fetch=True)
+        return rows if rows else []
+    except Exception as e:
+        print(f"Error loading history: {e}")
         return []
 
 
 def save_prediction(form, cost_summary, recommendations, budget_status):
     try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-
         cpu = float(form.get("cpu", 0))
         memory = float(form.get("memory", 0))
         storage = float(form.get("storage", 0))
@@ -208,7 +270,7 @@ def save_prediction(form, cost_summary, recommendations, budget_status):
             for r in recommendations
         )
 
-        cursor.execute("""
+        execute_query("""
             INSERT INTO predictions (
                 timestamp, cpu_usage, memory_gb, storage_gb, bandwidth_gb, vm_count,
                 monthly_budget, hourly_cost, daily_cost, monthly_cost, budget_status, recommendations
@@ -223,8 +285,6 @@ def save_prediction(form, cost_summary, recommendations, budget_status):
             budget_status["status"] if budget_status else "",
             rec_text
         ))
-        conn.commit()
-        conn.close()
     except Exception as e:
         print(f"Database error: {e}")
 
