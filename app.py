@@ -1,6 +1,8 @@
 import sqlite3
 import json
 import os
+import requests
+import threading
 from pathlib import Path
 from datetime import datetime
 
@@ -19,15 +21,47 @@ PREPARED_DATASET_PATH = Path("prepared_training_dataset.csv")
 DB_PATH = Path("predictions.db")
 DATASET_CONTEXT = None
 
+# Global PostgreSQL connection pool
+pg_pool = None
+DATABASE_URL = os.environ.get("DATABASE_URL")
+MODEL_SERVER_URL = os.environ.get("MODEL_SERVER_URL")
+
+def init_pg_pool():
+    global pg_pool
+    if DATABASE_URL and pg_pool is None:
+        try:
+            from psycopg2 import pool
+            # Min 1, Max 10 active connections in pool (thread-safe ThreadedConnectionPool)
+            pg_pool = pool.ThreadedConnectionPool(1, 10, dsn=DATABASE_URL)
+            print("PostgreSQL connection pool initialized successfully.")
+        except Exception as e:
+            print("Failed to initialize PostgreSQL connection pool.")
+
+init_pg_pool()
+
+
+def get_db_connection():
+    global pg_pool
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        if pg_pool is None:
+            init_pg_pool()
+        if pg_pool:
+            return pg_pool.getconn(), True
+    # Fallback to local SQLite
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn, False
+
 
 def execute_query(query, params=(), fetch=False, fetch_all=True):
     database_url = os.environ.get("DATABASE_URL")
     if database_url:
-        import psycopg2
         from psycopg2.extras import RealDictCursor
         query = query.replace("?", "%s")
-        conn = psycopg2.connect(database_url)
+        conn = None
         try:
+            conn, is_pg = get_db_connection()
             with conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                     cursor.execute(query, params)
@@ -38,8 +72,12 @@ def execute_query(query, params=(), fetch=False, fetch_all=True):
                             row = cursor.fetchone()
                             return dict(row) if row else None
             return None
+        except Exception as e:
+            print("Database query execution error occurred (credentials hidden).")
+            raise e
         finally:
-            conn.close()
+            if conn and pg_pool:
+                pg_pool.putconn(conn)
     else:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
@@ -61,30 +99,36 @@ def execute_query(query, params=(), fetch=False, fetch_all=True):
 def init_db():
     database_url = os.environ.get("DATABASE_URL")
     if database_url:
-        import psycopg2
-        conn = psycopg2.connect(database_url)
-        try:
-            with conn:
-                with conn.cursor() as cursor:
-                    cursor.execute("""
-                        CREATE TABLE IF NOT EXISTS predictions (
-                            id SERIAL PRIMARY KEY,
-                            timestamp VARCHAR(50),
-                            cpu_usage REAL,
-                            memory_gb REAL,
-                            storage_gb REAL,
-                            bandwidth_gb REAL,
-                            vm_count REAL,
-                            monthly_budget REAL,
-                            hourly_cost REAL,
-                            daily_cost REAL,
-                            monthly_cost REAL,
-                            budget_status VARCHAR(100),
-                            recommendations TEXT
-                        )
-                    """)
-        finally:
-            conn.close()
+        if pg_pool is None:
+            init_pg_pool()
+        if pg_pool:
+            conn = None
+            try:
+                conn = pg_pool.getconn()
+                with conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute("""
+                            CREATE TABLE IF NOT EXISTS predictions (
+                                id SERIAL PRIMARY KEY,
+                                timestamp VARCHAR(50),
+                                cpu_usage REAL,
+                                memory_gb REAL,
+                                storage_gb REAL,
+                                bandwidth_gb REAL,
+                                vm_count REAL,
+                                monthly_budget REAL,
+                                hourly_cost REAL,
+                                daily_cost REAL,
+                                monthly_cost REAL,
+                                budget_status VARCHAR(100),
+                                recommendations TEXT
+                            )
+                        """)
+            except Exception as e:
+                print("Failed to initialize database table in PostgreSQL.")
+            finally:
+                if conn and pg_pool:
+                    pg_pool.putconn(conn)
     else:
         conn = sqlite3.connect(DB_PATH)
         try:
@@ -120,6 +164,15 @@ def get_active_dataset_path():
 
 MODELS_DICT_PATH = Path("models.pkl")
 
+# Lazy loading local models to save memory in cloud production
+_local_models = None
+
+def get_local_models():
+    global _local_models
+    if _local_models is None:
+        _local_models = load_models()
+    return _local_models
+
 
 def load_models():
     if MODELS_DICT_PATH.exists():
@@ -140,27 +193,40 @@ def load_models():
     return {}
 
 
-models = load_models()
-
-
-def get_best_model():
-    metrics = load_metrics()
-    if metrics and "best_model" in metrics:
-        best_name = metrics["best_model"]
-        if best_name in models:
-            return models[best_name], best_name
-
-    if models:
-        first_key = list(models.keys())[0]
-        return models[first_key], first_key
-    return None, None
-
-
 def load_metrics():
     if not METRICS_PATH.exists():
         return None
     with open(METRICS_PATH, "r", encoding="utf-8") as file:
         return json.load(file)
+
+
+def get_metadata():
+    if MODEL_SERVER_URL:
+        try:
+            response = requests.get(f"{MODEL_SERVER_URL}/metadata", timeout=2.0)
+            if response.status_code == 200:
+                return response.json()
+        except Exception as e:
+            print(f"Failed to fetch model metadata from remote server: {e}")
+
+    # Local fallback
+    best_model_name = None
+    metrics = load_metrics()
+    if metrics and "best_model" in metrics:
+        best_model_name = metrics["best_model"]
+
+    local_models = get_local_models()
+    if not best_model_name and local_models:
+        best_model_name = list(local_models.keys())[0]
+
+    best_model_obj = local_models.get(best_model_name) if best_model_name else None
+    coefs = get_model_coefficients(best_model_obj)
+
+    return {
+        "best_model": best_model_name,
+        "coefficients": coefs,
+        "models": list(local_models.keys())
+    }
 
 
 def load_dataset_context():
@@ -345,7 +411,7 @@ def get_model_coefficients(model):
     return {"cpu": 0.0001, "memory": 0.004, "storage": 0.00005, "bandwidth": 0.0001}
 
 
-def build_cost_breakdown(form, model=None):
+def build_cost_breakdown(form, model=None, coefs=None):
     """Calculate each resource's cost and percentage contribution to total cost.
     Uses the model's actual coefficients when available (e.g. Linear Regression coef_),
     otherwise falls back to the dataset pricing formula coefficients.
@@ -358,7 +424,8 @@ def build_cost_breakdown(form, model=None):
     except (ValueError, TypeError):
         cpu, memory, storage, bandwidth = 0, 0, 0, 0
 
-    coefs = get_model_coefficients(model)
+    if coefs is None:
+        coefs = get_model_coefficients(model)
 
     cpu_cost_hr       = cpu       * coefs["cpu"]
     ram_cost_hr       = memory    * coefs["memory"]
@@ -602,14 +669,12 @@ def parse_form(form):
 
 @app.route('/')
 def home():
-    best_model_obj, _ = get_best_model()
-    model_coefs = get_model_coefficients(best_model_obj)
+    meta = get_metadata()
     return render_template(
         "index.html",
         dataset_context=load_dataset_context(),
-        model_coefs=model_coefs,
+        model_coefs=meta["coefficients"],
     )
-
 
 
 @app.route('/dashboard')
@@ -635,18 +700,20 @@ def history_page():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if not models:
+    meta = get_metadata()
+    best_model_name = meta["best_model"]
+    model_coefs = meta["coefficients"]
+    model_names = meta["models"]
+
+    if not model_names:
         fallback_coefs = {"cpu": 0.0001, "memory": 0.004, "storage": 0.00005, "bandwidth": 0.0001}
         return render_template(
             "index.html",
-            error="Model files not found. Run `python train_model.py` first.",
+            error="Model files not found. Run `python train_model.py` or start the model server.",
             form=request.form,
             dataset_context=load_dataset_context(),
             model_coefs=fallback_coefs,
         )
-
-    best_model_obj, best_model_name = get_best_model()
-    model_coefs = get_model_coefficients(best_model_obj)
 
     data, errors = parse_form(request.form)
     if errors:
@@ -664,13 +731,29 @@ def predict():
     # Calculate predictions for all models
     predictions = {}
 
-    for name, m in models.items():
-        data_unit = data.copy()
-        if "vm_count" in data_unit.columns:
-            data_unit["vm_count"] = 1.0
+    # Check if we should call the remote Model Server or run locally
+    if MODEL_SERVER_URL:
+        try:
+            features_json = data.to_dict(orient="records")
+            response = requests.post(f"{MODEL_SERVER_URL}/predict", json=features_json, timeout=3.0)
+            if response.status_code == 200:
+                res_predictions = response.json().get("predictions", {})
+                for name, pred_unit in res_predictions.items():
+                    predictions[name] = round(pred_unit * vms, 4)
+        except Exception as e:
+            print(f"Remote model prediction failed, trying local fallback: {e}")
+            predictions = {}
 
-        pred_unit = float(m.predict(data_unit)[0])
-        predictions[name] = round(pred_unit * vms, 4)
+    # Fallback to local prediction if remote server failed or is not configured
+    if not predictions:
+        local_models = get_local_models()
+        for name, m in local_models.items():
+            data_unit = data.copy()
+            if "vm_count" in data_unit.columns:
+                data_unit["vm_count"] = 1.0
+
+            pred_unit = float(m.predict(data_unit)[0])
+            predictions[name] = round(pred_unit * vms, 4)
 
     # Primary predicted cost (from the best model)
     predicted_cost = predictions.get(best_model_name, list(predictions.values())[0] if predictions else 0.0)
@@ -682,7 +765,11 @@ def predict():
     raw_budget = request.form.get("budget", "").strip()
     budget_status = None
     recommendations = []
-    cost_breakdown = build_cost_breakdown(request.form, model=best_model_obj)
+    
+    # Calculate breakdown
+    local_models = get_local_models() if not MODEL_SERVER_URL else {}
+    best_model_obj = local_models.get(best_model_name) if best_model_name else None
+    cost_breakdown = build_cost_breakdown(request.form, model=best_model_obj, coefs=model_coefs)
 
     if raw_budget:
         try:
@@ -694,7 +781,12 @@ def predict():
         except ValueError:
             pass
 
-    save_prediction(request.form, cost_summary, recommendations, budget_status)
+    # Async database write to prevent blocking the Flask request thread
+    threading.Thread(
+        target=save_prediction,
+        args=(dict(request.form), cost_summary, recommendations, budget_status),
+        daemon=True
+    ).start()
 
     return render_template(
         "index.html",
