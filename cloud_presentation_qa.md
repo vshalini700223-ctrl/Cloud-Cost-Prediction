@@ -201,3 +201,29 @@ A strict professor will ask hard follow-up questions to see if you actually wrot
 * **Professor's Question**: *"You say the project is not serverless. But on Render, you don't manage the raw virtual machine operating system or virtual cables. You just upload code and Render runs it. Isn't that serverless from your perspective?"*
 * **Your Defense**:
   * *"No, sir. Even though the platform is managed for us (PaaS), the execution model is still server-based. Our container runs continuously 24/7, listens persistently on Port 80, and we pay for a dedicated memory/CPU allocation. In a true serverless model (like AWS Lambda), code execution is event-driven (it runs for milliseconds, then shuts down) and scales to zero when there is no traffic. Our project relies on running servers."*
+
+---
+
+## 🔍 Part 3: Real Code & System Design Weaknesses (Code Audit)
+
+If the professor asks: *"What are the real-world architectural weaknesses (loopholes) in your CURRENT implementation, and how would you fix them in an enterprise release?"* here is your professional audit list:
+
+### 1. Connection Overhead (No Connection Pooling)
+* **The Problem**: In `execute_query()`, we open a fresh TCP database connection to PostgreSQL (`psycopg2.connect`) and close it (`conn.close()`) **on every single web request**.
+* **Why it's a loophole**: Opening a TCP connection and performing SSL handshakes on every click adds ~50ms of network overhead and wastes server CPU. Under high traffic, we will quickly hit PostgreSQL's connection limits.
+* **The Fix**: Implement a **Connection Pool** (using `psycopg2.pool.SimpleConnectionPool` or PgBouncer) to keep a set of database connections open and reuse them.
+
+### 2. Monolithic RAM Usage (Model Size Risks)
+* **The Problem**: The Flask app loads the entire 36MB `models.pkl` weight file into the server's RAM at startup.
+* **Why it's a loophole**: Render's Free tier limits RAM to 512 MB. If the ML model grows to 200MB or if we load multiple models, the server will trigger an **OOM (Out of Memory) crash** (exit status 137) at startup.
+* **The Fix**: Separate compute and ML inference. Host the ML model on a dedicated serving platform (like TensorFlow Serving or Triton) or as a serverless microservice, and have Flask communicate with it via lightweight REST/gRPC API calls.
+
+### 3. Synchronous Network Blocking
+* **The Problem**: The database write inside `save_prediction()` runs **synchronously** inside Flask's request handler.
+* **Why it's a loophole**: If Render PostgreSQL experiences network latency and takes 200ms to respond, the web server's handling thread is completely frozen. If 50 users make predictions at the same time, all server threads will block, causing page load timeouts for other visitors.
+* **The Fix**: Use asynchronous database drivers or delegate database logging tasks to a **background worker task queue** (like Celery + Redis).
+
+### 4. Concurrent Write Locks on SQLite Fallback
+* **The Problem**: If PostgreSQL goes down and the app falls back to local SQLite, SQLite locks the entire database file during a write.
+* **Why it's a loophole**: If we run multiple scaled web instances, two instances trying to write prediction history to SQLite at the same time will crash with a `database is locked` error. SQLite is not designed for concurrent multi-instance writing.
+* **The Fix**: Disable local file fallbacks in distributed cloud production. Instead, cache pending writes in memory or push them to a temporary distributed caching server (like Redis).
