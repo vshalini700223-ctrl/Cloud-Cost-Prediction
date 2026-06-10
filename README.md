@@ -52,7 +52,7 @@ Models are evaluated using 5-fold cross-validation and test-split metrics (MSE, 
 ## 🚀 Key Features
 
 * **Glassmorphism UI:** Built with Outfit typography, custom sliders, responsive layouts, and interactive dashboards.
-* **Budget-Aware Advisor:** Generates dynamic, cost-impact-based optimization suggestions (reductions or family swaps) if predictions exceed your monthly budget.
+* **Budget-Aware Advisor:** Generates dynamic, cost-impact-based optimization suggestions (reductions or family swaps) if predictions exceed the defined monthly budget.
 * **Side-by-Side Model Comparison:** View predictions across all three models concurrently.
 * **Detailed Cost Breakdown:** A breakdown highlighting the percentage cost contribution of each hardware resource.
 * **Persistent History Log:** Searchable and scrollable list of all previous predictions stored inside the relational database.
@@ -76,27 +76,29 @@ This generates:
 - `model_metrics.json` (Calculated metrics, features importance, and metadata)
 - `prepared_training_dataset.csv` (Preprocessed dataset used to dynamically bound frontend sliders)
 
-*(Optional: Augment dataset rows)*:
+**Optional: Dataset Augmentation**
+To generate an augmented dataset with noise-controlled variation:
 ```bash
 python augment_dataset.py --rows 5000
 ```
 
 ### 3. Run the Microservices Locally
 
-**Option A: Standard Flask Development (Monolith Fallback)**
-If run directly, the web tier automatically loads the local models as a fallback:
+**Single-Process Monolith Configuration (Fallback)**
+When run directly, the web application loads models locally from the root directory:
 ```bash
 python app.py
 ```
-Visit: [http://127.0.0.1:5000](http://127.0.0.1:5000)
+Access the application at: [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-**Option B: Separate Microservice Processes**
-Start the inference server (Port 5001):
+**Multi-Process Microservice Configuration**
+Alternatively, the web server and the machine learning model serving server can be run as separate independent processes:
+1. Start the Model Inference Server (Port 5001):
 ```bash
 $env:PORT="5001"
 python model_server.py
 ```
-Start the web app (Port 5000, pointing to the server):
+2. Start the web frontend application (Port 5000) pointing to the inference microservice:
 ```bash
 $env:MODEL_SERVER_URL="http://127.0.0.1:5001"
 python app.py
@@ -116,10 +118,11 @@ Access the application dashboard at [http://127.0.0.1:5000](http://127.0.0.1:500
 
 ## ☁️ Production Deployment on Render
 
-This project contains a `render.yaml` blueprint for fully automated Infrastructure as Code (IaC) deployment:
-1. Link your repository to **Render**.
-2. Render will automatically provision:
-   - A **PostgreSQL database** instance.
-   - A **Model Inference Service** (running `model_server.py`).
-   - A **Frontend Web Service** (running `app.py`, connected to the database and inference server).
-3. The environment variables (`DATABASE_URL`, `MODEL_SERVER_URL`) will automatically wire the services together.
+The repository includes a `render.yaml` blueprint for Infrastructure as Code (IaC) deployment on the Render platform:
+1. Connect the GitHub repository to the Render dashboard.
+2. Render automatically provisions the following resources:
+   - **PostgreSQL database:** Statically allocated container for prediction records history.
+   - **Model Inference Service:** Standard Python service running `model_server.py` to expose the predictions API.
+   - **Frontend Web Service:** Standard Python service running `app.py`, serving the UI and communicating with the database and inference server.
+3. Environment variables (`DATABASE_URL`, `MODEL_SERVER_URL`) are automatically injected to link the components together.
+
