@@ -126,3 +126,6 @@ The repository includes a `render.yaml` blueprint for Infrastructure as Code (Ia
    - **Frontend Web Service:** Standard Python service running `app.py`, serving the UI and communicating with the database and inference server.
 3. Environment variables (`DATABASE_URL`, `MODEL_SERVER_URL`) are automatically injected to link the components together.
 
+The live production application dashboard is accessible at: [https://cloud-cost-prediction.onrender.com](https://cloud-cost-prediction.onrender.com)
+
+
