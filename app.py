@@ -467,7 +467,7 @@ def generate_optimization_suggestions(form, monthly_cost, budget, cost_breakdown
         return [{
             "type": "success",
             "text": (
-                f"✅ Your resource configuration is already optimised and fits within "
+                f"✅ Your resource configuration is already optimized and fits within "
                 f"your monthly budget of <strong>${budget:.2f}</strong>. "
                 f"(Predicted: <strong>${monthly_cost:.2f}/mo</strong>)"
             ),
@@ -569,7 +569,7 @@ def generate_optimization_suggestions(form, monthly_cost, budget, cost_breakdown
                 f"💡 With <strong>{int(vms)} VMs</strong> and your top two resources "
                 f"accounting for <strong>{top_two_pct:.0f}%</strong> of cost, consider "
                 f"switching to a more cost-efficient VM family "
-                f"(e.g., compute-optimised or burstable instances) "
+                f"(e.g., compute-optimized or burstable instances) "
                 f"rather than tuning individual resources — this often yields better savings."
             ),
         })
