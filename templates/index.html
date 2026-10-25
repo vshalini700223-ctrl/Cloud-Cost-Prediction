@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Cloud Cost Planner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f8fafc;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --panel: #ffffff;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+            --green: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+            --gradient: linear-gradient(135deg, #3b82f6, #06b6d4);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Outfit', Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 35%),
+                radial-gradient(circle at top right, rgba(6, 182, 212, 0.1), transparent 30%),
+                var(--bg);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        main {
+            width: min(1140px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 60px;
+        }
+
+        nav,
+        .nav-actions,
+        .preset-row,
+        .actions,
+        .form-heading {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        nav {
+            justify-content: space-between;
+            margin-bottom: 36px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-mark {
+            display: grid;
+            width: 38px;
+            height: 38px;
+            place-items: center;
+            border-radius: 10px;
+            background: var(--gradient);
+            color: #fff;
+            font-weight: 800;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        a {
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        a:hover {
+            color: var(--cyan);
+        }
+
+        .nav-link,
+        .preset-button {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--ink);
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-link {
+            color: var(--blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 24px;
+            align-items: stretch;
+            margin-bottom: 24px;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-bottom: 14px;
+            font-size: clamp(34px, 5vw, 52px);
+            line-height: 1.05;
+            letter-spacing: -1px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            margin-bottom: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .hero-card,
+        .panel,
+        .quick-card,
+        .metric-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hero-card {
+            padding: 36px;
+        }
+
+        .quick-card {
+            padding: 28px;
+        }
+
+        .hero-pills {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .pill {
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.06);
+            color: var(--blue);
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin: 20px 0 28px;
+        }
+
+        .step {
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.7);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.02);
+            transition: transform 0.2s ease;
+        }
+        .step:hover {
+            transform: translateY(-2px);
+        }
+
+        .step strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: var(--ink);
+        }
+
+        .layout {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            padding: 32px;
+        }
+
+        .preset-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 16px 0 24px;
+        }
+
+        .preset-group {
+            display: inline-flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+
+        .preset-group:hover {
+            border-color: var(--blue);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .preset-group .preset-button {
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            padding: 10px 16px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--ink);
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+
+        .preset-group .preset-button:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .preset-refresh {
+            border: 0;
+            background: transparent;
+            border-left: 1px solid var(--line);
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+
+        .preset-refresh:hover {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .refresh-icon {
+            width: 14px;
+            height: 14px;
+            color: var(--muted);
+            transition: transform 0.3s ease;
+        }
+
+        .preset-refresh:hover .refresh-icon {
+            color: var(--blue);
+            transform: rotate(180deg);
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .field {
+            padding: 16px;
+            border: 1px solid rgba(226, 232, 240, 0.7);
+            border-radius: 12px;
+            background: rgba(248, 250, 252, 0.5);
+            transition: all 0.25s ease;
+        }
+        .field:focus-within {
+            border-color: var(--blue);
+            background: #ffffff;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.05);
+        }
+        .field.has-error {
+            border-color: var(--red);
+            background: rgba(239, 68, 68, 0.02);
+        }
+        .field.has-error:focus-within {
+            border-color: var(--red);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.05);
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .label-text-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .field-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--blue);
+            opacity: 0.85;
+        }
+
+        label span.range-info {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(226, 232, 240, 0.5);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 15px;
+            font-family: inherit;
+            background: #ffffff;
+            color: var(--ink);
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+        }
+
+        .hint {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        button.primary {
+            border: 0;
+            border-radius: 10px;
+            background: var(--gradient);
+            color: white;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        button.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .actions {
+            grid-column: 1 / -1;
+            justify-content: flex-start;
+            padding-top: 8px;
+        }
+
+        .result,
+        .error,
+        .recommendations,
+        .budget,
+        .comparison,
+        .dataset-panel {
+            margin-top: 24px;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .result {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .result-value {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 40px;
+            color: #15803d;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .cost-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .metric-card {
+            padding: 16px;
+            box-shadow: none;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(187, 247, 208, 0.5);
+            border-radius: 12px;
+        }
+
+        .metric-card span {
+            display: block;
+            margin-bottom: 6px;
+            color: #166534;
+            opacity: 0.8;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .metric-card strong {
+            color: #14532d;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .budget {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #92400e;
+        }
+
+        .budget.good {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+
+        /* Cost Breakdown Panel */
+        .breakdown-panel {
+            margin-top: 24px;
+            border-radius: 14px;
+            padding: 22px 24px;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(226, 232, 240, 0.7);
+            box-shadow: 0 4px 20px rgba(15,23,42,0.04);
+        }
+
+        .breakdown-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 16px;
+        }
+
+        .breakdown-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .breakdown-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 64px;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .breakdown-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .breakdown-bar-track {
+            height: 8px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            overflow: hidden;
+        }
+
+        .breakdown-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .breakdown-pct {
+            font-size: 13px;
+            font-weight: 800;
+            text-align: right;
+        }
+
+        /* Suggestion Cards */
+        .suggestions-panel {
+            margin-top: 24px;
+            border-radius: 14px;
+            padding: 22px 24px;
+            background: rgba(255, 251, 235, 0.8);
+            border: 1px solid #fef3c7;
+            backdrop-filter: blur(12px);
+        }
+
+        .suggestions-panel.all-good {
+            background: rgba(240, 253, 244, 0.85);
+            border-color: #bbf7d0;
+        }
+
+        .suggestions-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 14px;
+        }
+
+        .suggestion-card {
+            border-radius: 10px;
+            padding: 13px 16px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        .suggestion-card:last-child { margin-bottom: 0; }
+
+        .suggestion-card.success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .suggestion-card.warning {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            color: #78350f;
+        }
+
+        .suggestion-card.info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            color: #0c4a6e;
+        }
+
+        .suggestion-card.summary {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            font-size: 13px;
+        }
+
+        .comparison {
+            background: #f0f9ff;
+            border: 1px solid #e0f2fe;
+        }
+
+        .dataset-panel {
+            background: #f8fafc;
+            border: 1px solid var(--line);
+        }
+
+        .dataset-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .dataset-item {
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .dataset-item span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .dataset-item strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 15px;
+            color: var(--ink);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .option-card {
+            padding: 14px;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            background: #fff;
+            transition: transform 0.2s ease;
+        }
+        .option-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .option-card strong,
+        .option-card span {
+            display: block;
+        }
+
+        .option-card strong {
+            color: #0369a1;
+        }
+
+        .option-card span {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .error ul {
+            margin: 10px 0 0;
+            padding-left: 20px;
+            line-height: 1.5;
+        }
+
+        /* Live Cost Explorer */
+        .explorer-section {
+            margin-top: 32px;
+            border-radius: 16px;
+            padding: 26px 28px;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(226,232,240,0.8);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(15,23,42,0.04);
+        }
+
+        .explorer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .explorer-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .explorer-cost-display {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--blue);
+            letter-spacing: -0.5px;
+        }
+
+        .explorer-cost-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+            text-align: right;
+        }
+
+        .explorer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 32px;
+        }
+
+        .explorer-field label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+
+        .explorer-field label span.val {
+            color: var(--blue);
+            font-weight: 800;
+        }
+
+        .explorer-slider {
+            width: 100%;
+            height: 6px;
+            appearance: none;
+            border-radius: 999px;
+            background: var(--line);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .explorer-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--blue);
+            box-shadow: 0 2px 6px rgba(59,130,246,0.35);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .explorer-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .explorer-bar-row {
+            display: grid;
+            grid-template-columns: 90px 1fr 48px;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .explorer-bar-label { font-size: 12px; font-weight: 700; color: var(--ink); }
+        .explorer-bar-track { height: 7px; border-radius: 999px; background: #f1f5f9; overflow: hidden; }
+        .explorer-bar-fill { height: 100%; border-radius: 999px; transition: width 0.3s ease; }
+        .explorer-bar-pct { font-size: 12px; font-weight: 800; text-align: right; }
+
+        .explorer-use-btn {
+            margin-top: 18px;
+            border: 1.5px solid var(--blue);
+            background: transparent;
+            color: var(--blue);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .explorer-use-btn:hover { background: var(--blue); color: #fff; transform: translateY(-1px); }
+
+        /* Provider comparison */
+        .provider-section {
+            margin-top: 28px;
+            border-radius: 14px;
+            padding: 22px 24px;
+            background: rgba(240,249,255,0.8);
+            border: 1px solid #bae6fd;
+            backdrop-filter: blur(12px);
+        }
+
+        .provider-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 14px;
+        }
+
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .provider-card {
+            background: #fff;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            padding: 14px 16px;
+            transition: transform 0.2s;
+        }
+        .provider-card:hover { transform: translateY(-2px); }
+        .provider-card .prov-name { font-size: 12px; font-weight: 800; color: #0369a1; }
+        .provider-card .prov-region { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .provider-card .prov-type { font-size: 11px; color: var(--muted); }
+        .provider-card .prov-cost { font-size: 20px; font-weight: 800; color: var(--ink); margin-top: 8px; }
+        .provider-card .prov-monthly { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        /* Print / export */
+        .print-btn {
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--ink);
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .print-btn:hover { border-color: var(--blue); color: var(--blue); transform: translateY(-1px); }
+
+        @media print {
+            nav, .hero, .explorer-section, #opt-unlock-btn, .print-btn, .preset-button, .user-level-container { display: none !important; }
+            body { background: #fff !important; }
+            .results-col { box-shadow: none !important; border: 1px solid #ccc !important; }
+            .breakdown-panel, .suggestions-panel, .budget, .provider-section { break-inside: avoid; }
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #991b1b;
+        }
+
+        /* User Level Mode Selector */
+        .user-level-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 10px 0 24px 0;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--line);
+            flex-wrap: wrap;
+        }
+
+        .user-level-label {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-level-tabs {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+        }
+
+        .user-level-tab {
+            border: 0;
+            background: transparent;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .user-level-tab.active {
+            background: #ffffff;
+            color: var(--blue);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+        }
+
+        .user-level-tab:hover:not(.active) {
+            color: var(--ink);
+        }
+
+        @media (max-width: 920px) {
+            .hero,
+            form,
+            .cost-grid,
+            .steps,
+            .comparison-grid,
+            .dataset-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .breakdown-row {
+                grid-template-columns: 100px 1fr 56px;
+                gap: 8px;
+            }
+
+            .explorer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<main id="main-content" data-coefs='{{ model_coefs | tojson if model_coefs else '{"cpu":0.0001,"memory":0.004,"storage":0.00005,"bandwidth":0.0001}' }}'>
+    <nav>
+        <div class="brand">
+            <span class="brand-mark">$</span>
+            <span>Cloud Cost Planner</span>
+        </div>
+        <div class="nav-actions">
+            <a class="nav-link" href="/history">History</a>
+            <a class="nav-link" href="/dashboard">Dashboard</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-card">
+            <h1>Estimate cloud cost before deployment.</h1>
+            <p>Choose a sample workload or enter your own resource values to estimate cost, check budget risk, and scale configuration sizes dynamically.</p>
+            <div class="hero-pills">
+                <span class="pill">Budget alert</span>
+                <span class="pill">VM advice</span>
+                <span class="pill">Multi-VM scaling</span>
+            </div>
+        </div>
+        <div class="quick-card">
+            <h2>How to use it</h2>
+            <p>Start with a sample workload if you are unsure. Inputs are no longer bounded by the training dataset, allowing you to estimate any size of deployment. Multi-VM scaling is applied dynamically.</p>
+        </div>
+    </section>
+
+    <section class="steps">
+        <div class="step">
+            <strong>1. Select a workload</strong>
+            <p>Use a preset to fill realistic values quickly.</p>
+        </div>
+        <div class="step">
+            <strong>2. Set budget</strong>
+            <p>Add an optional monthly budget to check cost risk.</p>
+        </div>
+        <div class="step">
+            <strong>3. Compare options</strong>
+            <p>Review cost, VM advice, and low-cost provider choices.</p>
+        </div>
+    </section>
+
+    <section class="layout">
+        <section class="panel">
+            <div class="form-heading">
+                <h2>Cloud Resource Details</h2>
+                <p style="margin-bottom: 0;">Enter the workload resources you plan to use.</p>
+            </div>
+
+            <div class="user-level-container">
+                <span class="user-level-label">Interface Mode:</span>
+                <div class="user-level-tabs" role="tablist">
+                    <button type="button" class="user-level-tab" data-level="beginner" role="tab" aria-selected="false">Beginner</button>
+                    <button type="button" class="user-level-tab active" data-level="intermediate" role="tab" aria-selected="true">Intermediate</button>
+                    <button type="button" class="user-level-tab" data-level="pro" role="tab" aria-selected="false">Advanced (Pro)</button>
+                </div>
+            </div>
+
+            <div class="preset-row" aria-label="Sample workload presets">
+                <div class="preset-group">
+                    <button class="preset-button" type="button" data-preset="small">Small app</button>
+                    <button class="preset-refresh" type="button" data-preset="small" title="Randomize small app values">
+                        <svg class="refresh-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    </button>
+                </div>
+                <div class="preset-group">
+                    <button class="preset-button" type="button" data-preset="medium">Medium app</button>
+                    <button class="preset-refresh" type="button" data-preset="medium" title="Randomize medium app values">
+                        <svg class="refresh-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    </button>
+                </div>
+                <div class="preset-group">
+                    <button class="preset-button" type="button" data-preset="heavy">Heavy app</button>
+                    <button class="preset-refresh" type="button" data-preset="heavy" title="Randomize heavy app values">
+                        <svg class="refresh-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <form action="/predict" method="post">
+                {% for feature in dataset_context.features %}
+                    <div class="field {% if errors and errors[feature.field] %}has-error{% endif %}">
+                        <label for="{{ feature.field }}">
+                            <span class="label-text-container">
+                                {% if feature.field == 'cpu' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg>
+                                {% elif feature.field == 'memory' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path><line x1="9" y1="1" x2="9" y2="3"></line><line x1="15" y1="1" x2="15" y2="3"></line><line x1="9" y1="21" x2="9" y2="23"></line><line x1="15" y1="21" x2="15" y2="23"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+                                {% elif feature.field == 'storage' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                                {% elif feature.field == 'bandwidth' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="17 11 12 16 7 11"></polyline><line x1="12" y1="4" x2="12" y2="16"></line><path d="M17 21H7a3 3 0 0 1-3-3v-2"></path><path d="M20 16v2a3 3 0 0 1-3 3"></path></svg>
+                                {% elif feature.field == 'vms' %}
+                                    <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><rect x="6" y="6" width="12" height="4" rx="1"></rect><rect x="6" y="14" width="12" height="4" rx="1"></rect></svg>
+                                {% endif %}
+                                <span class="label-text">{{ feature.label }}</span>
+                            </span>
+                            <span class="range-info">Min: {{ dataset_context.ranges[feature.field].minimum }} {{ feature.unit }}</span>
+                        </label>
+                        <input id="{{ feature.field }}" name="{{ feature.field }}" type="number" min="{{ dataset_context.ranges[feature.field].minimum }}" step="0.01" placeholder="Example: {{ feature.placeholder }}" value="{{ form[feature.field] if form else '' }}" required>
+                        {% if errors and errors[feature.field] %}
+                            <p class="field-error-msg" style="color: var(--red); font-size: 13px; font-weight: 700; margin: 6px 0 0;">⚠️ {{ errors[feature.field] }}</p>
+                        {% endif %}
+                        <p class="hint" id="{{ feature.field }}-hint">Mapped to training column {{ feature.column }}.</p>
+                    </div>
+                {% endfor %}
+
+                <div class="field {% if errors and errors['budget'] %}has-error{% endif %}">
+                    <label for="budget">
+                        <span class="label-text-container">
+                            <svg class="field-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            <span class="label-text">Monthly budget</span>
+                        </span>
+                        <span class="range-info">optional</span>
+                    </label>
+                    <input id="budget" name="budget" type="number" min="0" step="0.01" placeholder="Example: 35" value="{{ form.get('budget', '') if form else '' }}">
+                    {% if errors and errors['budget'] %}
+                        <p class="field-error-msg" style="color: var(--red); font-size: 13px; font-weight: 700; margin: 6px 0 0;">⚠️ {{ errors['budget'] }}</p>
+                    {% endif %}
+                    <p class="hint" id="budget-hint">Used only for budget alert; it does not affect prediction.</p>
+                </div>
+
+                <div class="actions">
+                    <button class="primary" type="submit">Predict Cost</button>
+                </div>
+            </form>
+
+            {% if prediction is defined %}
+                <div class="result">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                        <div>
+                            <span class="result-value">${{ prediction }}</span>
+                            Estimated hourly cloud cost.
+                        </div>
+                        <button class="print-btn" onclick="window.print()" title="Print / Save as PDF">
+                            🖨 Print / Save PDF
+                        </button>
+                    </div>
+                    <div class="cost-grid">
+                        <div class="metric-card">
+                            <span>Hourly</span>
+                            <strong>${{ cost_summary.hourly }}</strong>
+                        </div>
+                        <div class="metric-card">
+                            <span>Daily</span>
+                            <strong>${{ cost_summary.daily }}</strong>
+                        </div>
+                        <div class="metric-card">
+                            <span>Monthly</span>
+                            <strong>${{ cost_summary.monthly }}</strong>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+
+
+            {% if prediction is defined %}
+
+                {# ── Cost Contribution Breakdown ─────────────────────────────── #}
+                {% if cost_breakdown %}
+                <div class="breakdown-panel">
+                    <div class="breakdown-title">Cost Contribution Breakdown</div>
+                    <div class="breakdown-rows" id="breakdown-rows">
+                        {% set bd_items = [
+                            ('Memory (RAM)', 'memory',    '#8b5cf6'),
+                            ('Storage',      'storage',   '#0ea5e9'),
+                            ('CPU Usage',    'cpu',       '#f59e0b'),
+                            ('Bandwidth',    'bandwidth', '#10b981')
+                        ] %}
+                        {% for label, key, color in bd_items %}
+                            {% if cost_breakdown[key] is defined %}
+                            <div class="breakdown-row">
+                                <span class="breakdown-label">{{ label }}</span>
+                                <div class="breakdown-bar-track">
+                                    <div class="breakdown-bar-fill"
+                                         data-pct="{{ cost_breakdown[key].pct }}"
+                                         data-color="{{ color }}"></div>
+                                </div>
+                                <span class="breakdown-pct"
+                                      data-color="{{ color }}">{{ cost_breakdown[key].pct }}%</span>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <script>
+                    // Apply data-color / data-pct as real CSS — avoids Jinja-in-style linter warnings
+                    document.querySelectorAll('.breakdown-bar-fill[data-pct]').forEach(function(el) {
+                        el.style.width = el.dataset.pct + '%';
+                        el.style.background = el.dataset.color;
+                    });
+                    document.querySelectorAll('.breakdown-pct[data-color]').forEach(function(el) {
+                        el.style.color = el.dataset.color;
+                    });
+                </script>
+                {% endif %}
+
+
+                {# ── Budget status ────────────────────────────────────────────── #}
+                {% if budget_status %}
+                    <div class="budget {% if not budget_status.is_over %}good{% endif %}">
+                        <strong>{{ budget_status.status }}</strong>
+                        <p style="margin: 6px 0 0;">{{ budget_status.message }}</p>
+                    </div>
+
+                    {# ── Suggestions panel ──────────────────────────────────────── #}
+                    {% if recommendations %}
+                        {% set is_all_good = (recommendations | length == 1 and recommendations[0].type == 'success') %}
+                        <div class="suggestions-panel {% if is_all_good %}all-good{% endif %}">
+                            <div class="suggestions-title">Cloud Cost Intelligence</div>
+                            {% for item in recommendations %}
+                                <div class="suggestion-card {{ item.type }}">
+                                    {{ item.text | safe }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                {% else %}
+                    {# ── No budget: show unlock CTA ──────────────────────────────── #}
+                    <div style="margin-top: 24px;">
+                        <button id="opt-unlock-btn" class="preset-button" type="button"
+                            style="border-color: var(--amber); color: var(--amber); font-weight: 700; width: 100%; justify-content: center; display: inline-flex; padding: 12px 16px;">
+                            💡 Do you want optimization suggestions?
+                        </button>
+                        <div id="opt-unlock-msg" class="suggestions-panel" style="display: none; margin-top: 14px;">
+                            <div class="suggestion-card info">
+                                <strong>Unlock Smart Suggestions</strong><br>
+                                Enter your <strong>Monthly Budget Alert</strong> above and click <strong>Predict Cost</strong> again.
+                                Our AI advisor will analyze your resource cost breakdown and generate targeted, proportional
+                                recommendations to fit your exact budget.
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# ── Provider Comparison ────────────────────────────────────── #}
+                {% if provider_comparison %}
+                <div class="provider-section">
+                    <div class="provider-title">☁ Similar Configurations from Dataset</div>
+                    <div class="provider-grid">
+                        {% for option in provider_comparison %}
+                        <div class="provider-card">
+                            <div class="prov-name">{{ option.provider }}</div>
+                            <div class="prov-region">📍 {{ option.region }}</div>
+                            <div class="prov-type">{{ option.vm_type }}</div>
+                            <div class="prov-cost">${{ option.hourly }}/hr</div>
+                            <div class="prov-monthly">${{ option.monthly }}/mo</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            {% endif %}
+
+
+
+
+            {% if error %}
+                <div class="error" style="border-radius:12px; padding:16px 20px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; font-size:14px;">
+                    ⚠️ {{ error }}
+                </div>
+            {% endif %}
+
+            {% if errors %}
+                <div style="border-radius:12px; padding:16px 20px; background:#fef2f2; border:1px solid #fecaca; margin-bottom:4px;">
+                    <div style="font-size:12px; font-weight:800; color:#991b1b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">⚠️ Please fix the following inputs</div>
+                    {% if errors is mapping %}
+                        {% for field, msg in errors.items() %}
+                            {% set label = field | capitalize %}
+                            {% if field == 'cpu' %}{% set label = 'CPU' %}
+                            {% elif field == 'vms' %}{% set label = 'Virtual machines' %}
+                            {% endif %}
+                            <div style="background:#fff; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; margin-bottom:6px; font-size:13.5px; color:#7f1d1d;">
+                                <strong>{{ label }}:</strong> {{ msg }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        {% for item in errors %}
+                            <div style="background:#fff; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; margin-bottom:6px; font-size:13.5px; color:#7f1d1d;">{{ item }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </section>
+
+    {# ── Live Cost Explorer ─────────────────────────────────────── #}
+    <div class="explorer-section" id="live-explorer">
+        <div class="explorer-header">
+            <div>
+                <div class="explorer-title">🔬 Live Cost Explorer</div>
+                <div style="font-size:13px; color:var(--muted); margin-top:4px;">Drag sliders to explore costs in real-time — no form submission needed.</div>
+            </div>
+            <div style="text-align:right;">
+                <div class="explorer-cost-display" id="explorer-cost">$0.0000/hr</div>
+                <div class="explorer-cost-sub" id="explorer-monthly">$0.00 / month</div>
+            </div>
+        </div>
+
+        <div class="explorer-grid">
+            <div class="explorer-field">
+                <label for="exp-cpu">CPU Usage <span class="val" id="exp-cpu-val">50%</span></label>
+                <input type="range" class="explorer-slider" id="exp-cpu" min="1" max="100" value="50" step="1">
+            </div>
+            <div class="explorer-field">
+                <label for="exp-memory">Memory (RAM) <span class="val" id="exp-memory-val">2 GB</span></label>
+                <input type="range" class="explorer-slider" id="exp-memory" min="0.1" max="128" value="2" step="0.1">
+            </div>
+            <div class="explorer-field">
+                <label for="exp-storage">Storage <span class="val" id="exp-storage-val">100 GB</span></label>
+                <input type="range" class="explorer-slider" id="exp-storage" min="1" max="2000" value="100" step="1">
+            </div>
+            <div class="explorer-field">
+                <label for="exp-bandwidth">Bandwidth <span class="val" id="exp-bandwidth-val">100 GB</span></label>
+                <input type="range" class="explorer-slider" id="exp-bandwidth" min="1" max="2000" value="100" step="1">
+            </div>
+            <div class="explorer-field" style="grid-column: span 2;">
+                <label for="exp-vms">Virtual Machines <span class="val" id="exp-vms-val">1</span></label>
+                <input type="range" class="explorer-slider" id="exp-vms" min="1" max="150" value="1" step="1">
+            </div>
+        </div>
+
+        {# Cost breakdown bars — updated live by JS #}
+        <div style="margin-top:22px; border-top:1px solid var(--line); padding-top:18px;">
+            <div style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:12px;">Cost Contribution</div>
+            {% for label, id_suffix, color in [
+                ('Memory (RAM)', 'memory', '#8b5cf6'),
+                ('Storage',      'storage', '#0ea5e9'),
+                ('CPU Usage',    'cpu',     '#f59e0b'),
+                ('Bandwidth',    'bandwidth','#10b981')
+            ] %}
+            <div class="explorer-bar-row">
+                <span class="explorer-bar-label">{{ label }}</span>
+                <div class="explorer-bar-track">
+                    <div class="explorer-bar-fill" id="exp-bar-{{ id_suffix }}"
+                         data-color="{{ color }}"></div>
+                </div>
+                <span class="explorer-bar-pct" id="exp-pct-{{ id_suffix }}"
+                      data-color="{{ color }}">0%</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button class="explorer-use-btn" onclick="fillFormFromExplorer()">
+            ↗ Use these values in the form
+        </button>
+    </div>
+</main>
+<script>
+    const MODEL_COEFS = JSON.parse(document.getElementById('main-content').dataset.coefs);
+
+    const presetRanges = {
+        small: {
+            cpu: [10, 40],
+            memory: [2.0, 8.0],
+            storage: [50, 200],
+            bandwidth: [10, 100],
+            vms: [1, 4],
+            budget: [15, 50]
+        },
+        medium: {
+            cpu: [30, 70],
+            memory: [16.0, 64.0],
+            storage: [250, 1000],
+            bandwidth: [100, 1000],
+            vms: [5, 20],
+            budget: [100, 500]
+        },
+        heavy: {
+            cpu: [50, 95],
+            memory: [128.0, 1024.0],
+            storage: [1000, 10000],
+            bandwidth: [1000, 10000],
+            vms: [25, 150],
+            budget: [1000, 10000]
+        }
+    };
+
+    function getRandomArbitrary(min, max, isInt = false) {
+        const val = Math.random() * (max - min) + min;
+        return isInt ? Math.floor(val) : parseFloat(val.toFixed(2));
+    }
+
+    function applyPreset(presetType) {
+        const ranges = presetRanges[presetType];
+        if (!ranges) return;
+
+        // Generate randomized values in range
+        const cpu = getRandomArbitrary(ranges.cpu[0], ranges.cpu[1], true);
+        const memory = getRandomArbitrary(ranges.memory[0], ranges.memory[1]);
+        const storage = getRandomArbitrary(ranges.storage[0], ranges.storage[1], true);
+        const bandwidth = getRandomArbitrary(ranges.bandwidth[0], ranges.bandwidth[1], true);
+        const vms = getRandomArbitrary(ranges.vms[0], ranges.vms[1], true);
+        const budget = getRandomArbitrary(ranges.budget[0], ranges.budget[1], true);
+
+        // Populate values
+        document.getElementById("cpu").value = cpu;
+        document.getElementById("memory").value = memory;
+        document.getElementById("storage").value = storage;
+        document.getElementById("bandwidth").value = bandwidth;
+        document.getElementById("vms").value = vms;
+        document.getElementById("budget").value = budget;
+    }
+
+    document.querySelectorAll(".preset-button, .preset-refresh").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const presetType = btn.dataset.preset;
+            applyPreset(presetType);
+        });
+    });
+
+    const levelData = {
+        beginner: {
+            cpu: {
+                label: "Average Server Workload",
+                placeholder: "Example: 30 (light website/API)",
+                hint: "How busy will your server be? E.g., a quiet site uses 10-30%, active app uses 50-70%."
+            },
+            memory: {
+                label: "App Memory (RAM)",
+                placeholder: "Example: 1 (basic app)",
+                hint: "RAM size. E.g., basic database needs 1-2 GB, high-traffic node needs 3-4 GB."
+            },
+            storage: {
+                label: "Total File Storage",
+                placeholder: "Example: 150 (small database)",
+                hint: "Disk space for files/database. E.g., 100 GB is plenty for static blogs."
+            },
+            bandwidth: {
+                label: "Network Traffic (Downloads)",
+                placeholder: "Example: 100 (low traffic)",
+                hint: "Data users download. E.g., 50 GB is low traffic, 400 GB is heavy traffic."
+            },
+            vms: {
+                label: "Number of Servers",
+                placeholder: "Example: 1",
+                hint: "How many servers to run. The cost scales proportionally by the number of servers."
+            },
+            budget: {
+                label: "Maximum Monthly Expense",
+                placeholder: "Example: 20",
+                hint: "Optional limit to trigger alerts if predicted cost goes too high."
+            }
+        },
+        intermediate: {
+            cpu: {
+                label: "CPU Utilization",
+                placeholder: "Example: 55",
+                hint: "Target CPU utilization rate. Mapped to CPU capacity profile (cpu_usage)."
+            },
+            memory: {
+                label: "Memory Capacity",
+                placeholder: "Example: 2",
+                hint: "RAM in Gigabytes. Corresponds to standard instance sizes ({{ dataset_context.ranges.memory.observed_minimum | round(2) }} - {{ dataset_context.ranges.memory.observed_maximum | round(2) }} GB)."
+            },
+            storage: {
+                label: "Allocated Storage",
+                placeholder: "Example: 460",
+                hint: "Total disk storage space. Maps to block volume sizes ({{ dataset_context.ranges.storage.observed_minimum | round(2) }} - {{ dataset_context.ranges.storage.observed_maximum | round(2) }} GB)."
+            },
+            bandwidth: {
+                label: "Monthly Data Egress",
+                placeholder: "Example: 420",
+                hint: "Estimated monthly network traffic. Affects outgoing data cost."
+            },
+            vms: {
+                label: "Virtual Machines (Count)",
+                placeholder: "Example: 1",
+                hint: "Total virtual machine instances. Cost is estimated per VM and scaled by the instance count."
+            },
+            budget: {
+                label: "Monthly Budget Alert",
+                placeholder: "Example: 35",
+                hint: "Optional budget limit. Used to check cost safety threshold."
+            }
+        },
+        pro: {
+            cpu: {
+                label: "CPU utilization (x₁)",
+                placeholder: "Example: 55.00",
+                hint: "Mean CPU utilization coefficient. Training range: [{{ dataset_context.ranges.cpu.observed_minimum | round(2) }}% - {{ dataset_context.ranges.cpu.observed_maximum | round(2) }}%]."
+            },
+            memory: {
+                label: "RAM allocation (x₂)",
+                placeholder: "Example: 2.00",
+                hint: "Provisioned memory capacity (memory_gb). Training range: [{{ dataset_context.ranges.memory.observed_minimum | round(2) }} - {{ dataset_context.ranges.memory.observed_maximum | round(2) }} GB]."
+            },
+            storage: {
+                label: "Disk capacity (x₃)",
+                placeholder: "Example: 460.00",
+                hint: "Block storage size (storage_gb, mapped to disk_io). Training range: [{{ dataset_context.ranges.storage.observed_minimum | round(2) }} - {{ dataset_context.ranges.storage.observed_maximum | round(2) }} GB]."
+            },
+            bandwidth: {
+                label: "Network egress (x₄)",
+                placeholder: "Example: 420.00",
+                hint: "Bandwidth volume (bandwidth_gb, mapped to net_io). Training range: [{{ dataset_context.ranges.bandwidth.observed_minimum | round(2) }} - {{ dataset_context.ranges.bandwidth.observed_maximum | round(2) }} GB]."
+            },
+            vms: {
+                label: "Instance count (x₅)",
+                placeholder: "Example: 1",
+                hint: "VM count (vm_count). Bounded to min 1; total cost scales linearly: C_total = N_vm * C_unit."
+            },
+            budget: {
+                label: "Budget Threshold (B_max)",
+                placeholder: "Example: 35.00",
+                hint: "Optional pricing threshold to evaluate cost policy compliance."
+            }
+        }
+    };
+
+    function setUserLevel(level) {
+        // Save choice in localStorage
+        localStorage.setItem("userLevel", level);
+
+        // Update tabs active state
+        document.querySelectorAll(".user-level-tab").forEach((tab) => {
+            if (tab.dataset.level === level) {
+                tab.classList.add("active");
+                tab.setAttribute("aria-selected", "true");
+            } else {
+                tab.classList.remove("active");
+                tab.setAttribute("aria-selected", "false");
+            }
+        });
+
+        // Update labels, hints, and placeholders
+        const data = levelData[level];
+        if (!data) return;
+
+        Object.keys(data).forEach((fieldId) => {
+            const input = document.getElementById(fieldId);
+            const hint = document.getElementById(`${fieldId}-hint`);
+            const labelTextSpan = input ? input.parentElement.querySelector(".label-text") : null;
+
+            if (labelTextSpan) {
+                labelTextSpan.textContent = data[fieldId].label;
+            }
+            if (input) {
+                input.placeholder = data[fieldId].placeholder;
+            }
+            if (hint) {
+                hint.textContent = data[fieldId].hint;
+            }
+        });
+    }
+
+    // Add click listeners to tabs
+    document.querySelectorAll(".user-level-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+            setUserLevel(tab.dataset.level);
+        });
+    });
+
+    // ── Live Cost Explorer ──────────────────────────────────────────────────
+    function calcExplorerCost() {
+        const cpu       = parseFloat(document.getElementById('exp-cpu').value) || 0;
+        const memory    = parseFloat(document.getElementById('exp-memory').value) || 0;
+        const storage   = parseFloat(document.getElementById('exp-storage').value) || 0;
+        const bandwidth = parseFloat(document.getElementById('exp-bandwidth').value) || 0;
+        const vms       = parseFloat(document.getElementById('exp-vms').value) || 1;
+
+        document.getElementById('exp-cpu-val').textContent       = cpu + '%';
+        document.getElementById('exp-memory-val').textContent    = memory + ' GB';
+        document.getElementById('exp-storage-val').textContent   = storage + ' GB';
+        document.getElementById('exp-bandwidth-val').textContent = bandwidth + ' GB';
+        document.getElementById('exp-vms-val').textContent       = vms;
+
+        const cpuCost  = cpu       * MODEL_COEFS.cpu;
+        const memCost  = memory    * MODEL_COEFS.memory;
+        const stoCost  = storage   * MODEL_COEFS.storage;
+        const bwCost   = bandwidth * MODEL_COEFS.bandwidth;
+        const totalHr  = (cpuCost + memCost + stoCost + bwCost) * vms;
+        const monthly  = totalHr * 24 * 30;
+
+        document.getElementById('explorer-cost').textContent   = '$' + totalHr.toFixed(4) + '/hr';
+        document.getElementById('explorer-monthly').textContent = '$' + monthly.toFixed(2) + ' / month';
+
+        const unitTotalHr = cpuCost + memCost + stoCost + bwCost;
+        const costs = { cpu: cpuCost, memory: memCost, storage: stoCost, bandwidth: bwCost };
+        const colors = { cpu: '#f59e0b', memory: '#8b5cf6', storage: '#0ea5e9', bandwidth: '#10b981' };
+
+        Object.keys(costs).forEach(key => {
+            const pct = unitTotalHr > 0 ? (costs[key] / unitTotalHr * 100).toFixed(1) : 0;
+            const bar = document.getElementById('exp-bar-' + key);
+            const label = document.getElementById('exp-pct-' + key);
+            if (bar) { bar.style.width = pct + '%'; bar.style.background = colors[key]; }
+            if (label) { label.textContent = pct + '%'; label.style.color = colors[key]; }
+        });
+    }
+
+    function fillFormFromExplorer() {
+        document.getElementById('cpu').value       = document.getElementById('exp-cpu').value;
+        document.getElementById('memory').value    = document.getElementById('exp-memory').value;
+        document.getElementById('storage').value   = document.getElementById('exp-storage').value;
+        document.getElementById('bandwidth').value = document.getElementById('exp-bandwidth').value;
+        document.getElementById('vms').value       = document.getElementById('exp-vms').value;
+        document.getElementById('cpu').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    ['exp-cpu', 'exp-memory', 'exp-storage', 'exp-bandwidth', 'exp-vms'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', calcExplorerCost);
+        }
+    });
+
+    // Initialize on load
+    document.addEventListener("DOMContentLoaded", () => {
+        calcExplorerCost();
+        const savedLevel = localStorage.getItem("userLevel") || "intermediate";
+        setUserLevel(savedLevel);
+
+        // Optimization suggestions unlock handler
+        const unlockBtn = document.getElementById("opt-unlock-btn");
+        const unlockMsg = document.getElementById("opt-unlock-msg");
+        if (unlockBtn && unlockMsg) {
+            unlockBtn.addEventListener("click", () => {
+                unlockMsg.style.display = "block";
+                unlockBtn.style.display = "none";
+            });
+        }
+    });
+</script>
+</body>
+</html>

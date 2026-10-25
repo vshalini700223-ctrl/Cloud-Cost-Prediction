@@ -1,0 +1,208 @@
+{
+    "dataset": {
+        "rows": 5000,
+        "features_used": [
+            "cpu_usage",
+            "memory_gb",
+            "storage_gb",
+            "bandwidth_gb",
+            "vm_count"
+        ],
+        "target": "cost",
+        "source_file": "Final_Cloud_Dataset.csv",
+        "column_mappings": {
+            "cpu_usage": "cpu_usage",
+            "memory_gb": "memory_gb",
+            "storage_gb": "storage_gb",
+            "bandwidth_gb": "bandwidth_gb",
+            "vm_count": "vm_count",
+            "cost": "cost (adapted/rebalanced)"
+        },
+        "feature_ranges": {
+            "cpu_usage": {
+                "minimum": 0,
+                "maximum": 100,
+                "observed_minimum": 8.94,
+                "observed_maximum": 100.0
+            },
+            "memory_gb": {
+                "minimum": 0,
+                "maximum": 4.5,
+                "observed_minimum": 0.78,
+                "observed_maximum": 4.5
+            },
+            "storage_gb": {
+                "minimum": 0,
+                "maximum": 1122.32,
+                "observed_minimum": 91.66,
+                "observed_maximum": 1122.32
+            },
+            "bandwidth_gb": {
+                "minimum": 0,
+                "maximum": 549.11,
+                "observed_minimum": 47.46,
+                "observed_maximum": 549.11
+            },
+            "vm_count": {
+                "minimum": 1,
+                "maximum": 1.0,
+                "observed_minimum": 1.0,
+                "observed_maximum": 1.0
+            }
+        },
+        "feature_definitions": [
+            {
+                "field": "cpu",
+                "column": "cpu_usage",
+                "label": "CPU usage",
+                "unit": "%",
+                "minimum": 0,
+                "maximum": 100,
+                "placeholder": "55",
+                "aliases": [
+                    "cpu_usage",
+                    "cpu",
+                    "cpu_utilization",
+                    "cpu_percent",
+                    "CPU"
+                ]
+            },
+            {
+                "field": "memory",
+                "column": "memory_gb",
+                "label": "Memory",
+                "unit": "GB",
+                "minimum": 0,
+                "maximum": null,
+                "placeholder": "2",
+                "aliases": [
+                    "memory_gb",
+                    "RAM_GB",
+                    "ram_gb",
+                    "memory",
+                    "memory_usage",
+                    "Memory"
+                ]
+            },
+            {
+                "field": "storage",
+                "column": "storage_gb",
+                "label": "Storage",
+                "unit": "GB",
+                "minimum": 0,
+                "maximum": null,
+                "placeholder": "460",
+                "aliases": [
+                    "storage_gb",
+                    "storage",
+                    "storage_size",
+                    "storage_size_gb",
+                    "disk_gb",
+                    "disk_size",
+                    "disk_io"
+                ]
+            },
+            {
+                "field": "bandwidth",
+                "column": "bandwidth_gb",
+                "label": "Bandwidth",
+                "unit": "GB",
+                "minimum": 0,
+                "maximum": null,
+                "placeholder": "420",
+                "aliases": [
+                    "bandwidth_gb",
+                    "bandwidth",
+                    "network_bandwidth",
+                    "network_gb",
+                    "net_io",
+                    "network_io"
+                ]
+            },
+            {
+                "field": "vms",
+                "column": "vm_count",
+                "label": "Virtual machines",
+                "unit": "count",
+                "minimum": 1,
+                "maximum": null,
+                "placeholder": "1",
+                "aliases": [
+                    "vm_count",
+                    "vms",
+                    "vm",
+                    "number_of_vms",
+                    "instances",
+                    "instance_count",
+                    "vCPU"
+                ]
+            }
+        ],
+        "providers": [
+            "AWS",
+            "Azure",
+            "GCP"
+        ],
+        "regions": [
+            "asia-south",
+            "us-east",
+            "us-west"
+        ],
+        "vm_types": [
+            "B1s",
+            "n1-standard-1",
+            "t2.micro"
+        ],
+        "average_cost": 0.067968,
+        "minimum_cost": 0.019978,
+        "maximum_cost": 0.124553,
+        "average_utilization": 53.95
+    },
+    "models": {
+        "Linear Regression": {
+            "mse": 0.0,
+            "rmse": 0.0,
+            "r2": 1.0,
+            "cv_r2_mean": 1.0,
+            "cv_r2_std": 0.0
+        },
+        "Decision Tree": {
+            "mse": 6e-06,
+            "rmse": 0.002383,
+            "r2": 0.984927,
+            "cv_r2_mean": 0.987014,
+            "cv_r2_std": 0.000864
+        },
+        "Random Forest": {
+            "mse": 2e-06,
+            "rmse": 0.001374,
+            "r2": 0.994988,
+            "cv_r2_mean": 0.995891,
+            "cv_r2_std": 0.000308
+        }
+    },
+    "best_model": "Linear Regression",
+    "selection_note": "The selected model has the lowest RMSE on the held-out test set. Very high R2 scores are expected here because the dataset cost values closely follow structured VM pricing fields.",
+    "feature_importance": [
+        {
+            "feature": "storage_gb",
+            "importance": 0.3853
+        },
+        {
+            "feature": "bandwidth_gb",
+            "importance": 0.3841
+        },
+        {
+            "feature": "memory_gb",
+            "importance": 0.155
+        },
+        {
+            "feature": "cpu_usage",
+            "importance": 0.0756
+        },
+        {
+            "feature": "vm_count",
+            "importance": 0.0
+        }
+    ]
+}

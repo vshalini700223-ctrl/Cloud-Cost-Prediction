@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: cloud-cost-prediction
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cloud-cost-db
+          property: connectionString
+      - key: MODEL_SERVER_URL
+        fromService:
+          name: model-inference-server
+          type: web
+          property: host
+
+  - type: web
+    name: model-inference-server
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python train_model.py
+    startCommand: gunicorn model_server:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+
+databases:
+  - name: cloud-cost-db
+    plan: free
+    databaseName: cloud_cost_predictions
+    user: cloud_cost_user

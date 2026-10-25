@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Model Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f8fafc;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --panel: #ffffff;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+            --green: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+            --gradient: linear-gradient(135deg, #3b82f6, #06b6d4);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Outfit', Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 35%),
+                radial-gradient(circle at top right, rgba(16, 185, 129, 0.1), transparent 30%),
+                var(--bg);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        main {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 60px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-mark {
+            display: grid;
+            width: 38px;
+            height: 38px;
+            place-items: center;
+            border-radius: 10px;
+            background: var(--gradient);
+            color: #fff;
+            font-weight: 800;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        a {
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        a:hover {
+            color: var(--cyan);
+        }
+
+        .nav-link {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--blue);
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-link:hover {
+            border-color: var(--blue);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+            transform: translateY(-1px);
+        }
+
+        h1,
+        h2,
+        p {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-bottom: 12px;
+            font-size: clamp(34px, 4vw, 48px);
+            line-height: 1.05;
+            letter-spacing: -1px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            margin-bottom: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 14px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.08);
+            color: var(--blue);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .panel,
+        .stat {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .panel {
+            padding: 28px;
+        }
+
+        .stat {
+            padding: 20px;
+        }
+
+        .stat span,
+        .panel .label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat strong {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--ink);
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 20px;
+        }
+
+        .table-wrap {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #ffffff;
+            margin-top: 14px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody tr:first-child td {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .bar-row {
+            margin: 20px 0;
+        }
+
+        .model-chart {
+            display: grid;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .model-card {
+            padding: 16px;
+            border: 1px solid rgba(226, 232, 240, 0.7);
+            border-radius: 12px;
+            background: rgba(248, 250, 252, 0.5);
+            transition: all 0.25s ease;
+        }
+        .model-card:hover {
+            background: #ffffff;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
+            border-color: var(--blue);
+        }
+
+        .model-card strong,
+        .model-card span {
+            display: block;
+        }
+
+        .model-card strong {
+            color: var(--ink);
+            font-size: 16px;
+        }
+
+        .model-card span {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .bar-label span:last-child {
+            color: var(--muted);
+        }
+
+        .bar-track {
+            height: 12px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e2e8f0;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--green), var(--blue));
+        }
+
+        .notice {
+            border-color: #fef3c7;
+            background: #fffbeb;
+            color: #92400e;
+            border-radius: 16px;
+        }
+
+        .feature-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .dataset-list {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .dataset-box {
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: rgba(248, 250, 252, 0.5);
+        }
+
+        .dataset-box span {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dataset-box strong {
+            color: var(--ink);
+            font-size: 15px;
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: #ffffff;
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            transition: all 0.2s ease;
+        }
+        .chip:hover {
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        @media (max-width: 900px) {
+            nav {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .grid,
+            .section-grid,
+            .dataset-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <nav>
+        <div class="brand">
+            <span class="brand-mark">$</span>
+            <span>Cloud Cost Planner</span>
+        </div>
+        <div class="nav-actions">
+            <a class="nav-link" href="/">Back to Prediction</a>
+        </div>
+    </nav>
+
+    <header>
+        <span class="eyebrow">Proposal Result Verification</span>
+        <h1>Model performance dashboard.</h1>
+        <p>Use this page for model comparison, dataset summary, feature importance, and training verification.</p>
+    </header>
+
+    {% if not metrics %}
+        <section class="panel notice" style="margin-top: 22px;">
+            <h2>Metrics not found</h2>
+            <p>Run <strong>python train_model.py</strong> to create model_metrics.json, then reload this page.</p>
+        </section>
+    {% else %}
+        <section class="grid">
+            <div class="stat">
+                <span>Best model</span>
+                <strong>{{ metrics.best_model }}</strong>
+            </div>
+            <div class="stat">
+                <span>Dataset rows</span>
+                <strong>{{ metrics.dataset.rows }}</strong>
+            </div>
+            <div class="stat">
+                <span>Average cost</span>
+                <strong>${{ metrics.dataset.average_cost }}</strong>
+            </div>
+            <div class="stat">
+                <span>Minimum cost</span>
+                <strong>${{ metrics.dataset.minimum_cost }}</strong>
+            </div>
+            <div class="stat">
+                <span>Maximum cost</span>
+                <strong>${{ metrics.dataset.maximum_cost }}</strong>
+            </div>
+            <div class="stat">
+                <span>Target variable</span>
+                <strong>{{ metrics.dataset.target }}</strong>
+            </div>
+        </section>
+
+        <section class="section-grid">
+            <div class="panel">
+                <span class="label">MSE, RMSE, and R2 Score</span>
+                <h2>Regression Model Comparison</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>MSE</th>
+                                <th>RMSE</th>
+                                <th>Test R² Score</th>
+                                <th>5-Fold CV R² Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for name, values in metrics.models.items() %}
+                                <tr>
+                                    <td>{{ name }}</td>
+                                    <td>{{ values.mse }}</td>
+                                    <td>{{ values.rmse }}</td>
+                                    <td>{{ values.r2 }}</td>
+                                    <td>
+                                        {% if values.cv_r2_mean is defined %}
+                                            {{ values.cv_r2_mean | round(4) }} <span style="color: var(--muted); font-weight: normal; font-size: 12px;">± {{ values.cv_r2_std | round(4) }}</span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="model-chart">
+                    {% for name, values in metrics.models.items() %}
+                        <div class="model-card">
+                            <strong>{{ name }}</strong>
+                            <span>Test R² Score: {{ values.r2 }}</span>
+                            {% if values.cv_r2_mean is defined %}
+                                <span style="margin-top: 2px;">5-Fold CV R²: {{ values.cv_r2_mean | round(4) }} ± {{ values.cv_r2_std | round(4) }}</span>
+                            {% endif %}
+                            <div class="bar-track" style="margin-top: 8px;">
+                                <div class="bar-fill" data-percent="{{ values.r2 * 100 }}"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel">
+                <span class="label">Selected model explanation</span>
+                <h2>Feature Importance</h2>
+                <p>Higher values show stronger influence on the selected model's prediction.</p>
+                {% for item in metrics.feature_importance %}
+                    <div class="bar-row">
+                        <div class="bar-label">
+                            <span>{{ item.feature }}</span>
+                            <span>{{ (item.importance * 100) | round(1) }}%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" data-percent="{{ item.importance * 100 }}"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel" style="margin-top: 16px;">
+            <span class="label">Feature selection</span>
+            <h2>Features Used During Training</h2>
+            <div class="feature-list">
+                {% for feature in metrics.dataset.features_used %}
+                    <span class="chip">{{ feature }}</span>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel" style="margin-top: 16px;">
+            <span class="label">Dataset context</span>
+            <h2>Cloud Workload Dataset</h2>
+            <p>The implementation maps incoming datasets to proposal-aligned features: CPU usage, memory usage, storage, bandwidth, virtual machines, and cost.</p>
+            <div class="dataset-list">
+                <div class="dataset-box">
+                    <span>Providers</span>
+                    <strong>{{ metrics.dataset.providers | join(', ') }}</strong>
+                </div>
+                <div class="dataset-box">
+                    <span>Regions</span>
+                    <strong>{{ metrics.dataset.regions | join(', ') }}</strong>
+                </div>
+                <div class="dataset-box">
+                    <span>VM types</span>
+                    <strong>{{ metrics.dataset.vm_types | join(', ') }}</strong>
+                </div>
+            </div>
+            <h2 style="margin-top: 20px;">Column Mapping</h2>
+            <div class="feature-list">
+                {% for target, source in metrics.dataset.column_mappings.items() %}
+                    <span class="chip">{{ source }} -> {{ target }}</span>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="panel" style="margin-top: 16px;">
+            <span class="label">Result explanation</span>
+            <h2>Why This Model Was Selected</h2>
+            <p>{{ metrics.selection_note or "The selected model has the lowest RMSE on the held-out test set." }}</p>
+        </section>
+    {% endif %}
+
+    <section class="panel" style="margin-top: 16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <div>
+                <span class="label">Usage tracking</span>
+                <h2 style="margin:0;">Recent Predictions</h2>
+            </div>
+            <a href="/history" style="font-size:13px; font-weight:700; color:var(--blue); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:8px 14px; background:#fff; transition:all 0.2s ease;" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--line)'">
+                View All History →
+            </a>
+        </div>
+        {% if history %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>CPU</th>
+                            <th>Memory</th>
+                            <th>Storage</th>
+                            <th>Bandwidth</th>
+                            <th>VMs</th>
+                            <th>Monthly Cost</th>
+                            <th>Budget</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history %}
+                            <tr>
+                                <td style="font-size:12px; color:#64748b; font-family:monospace;">{{ item.timestamp }}</td>
+                                <td>{{ item.cpu_usage | float | round(1) }}%</td>
+                                <td>{{ (item.memory_gb or item.memory_usage) | float | round(2) }} GB</td>
+                                <td>{{ (item.storage_gb or item.disk_io) | float | round(1) }} GB</td>
+                                <td>{{ (item.bandwidth_gb or item.net_io) | float | round(1) }} GB</td>
+                                <td>{{ item.vm_count or item.vCPU }}</td>
+                                <td style="font-weight:700; color:var(--blue);">${{ item.monthly_cost | float | round(2) }}</td>
+                                <td style="color:#64748b;">{% if item.monthly_budget %}${{ item.monthly_budget | float | round(2) }}{% else %}—{% endif %}</td>
+                                <td>
+                                    {% if item.budget_status == 'Over budget' %}
+                                        <span style="display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; background:#fef2f2; color:#991b1b; border:1px solid #fecaca;">Over Budget</span>
+                                    {% elif item.budget_status == 'Within budget' %}
+                                        <span style="display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">Within Budget</span>
+                                    {% else %}
+                                        <span style="display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0;">No Budget</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No prediction history yet. Submit a prediction from the home page to create usage records.</p>
+        {% endif %}
+    </section>
+
+
+</main>
+<script>
+    document.querySelectorAll('.bar-fill').forEach(bar => {
+        const pct = bar.getAttribute('data-percent');
+        if (pct) {
+            bar.style.width = pct + '%';
+        }
+    });
+</script>
+</body>
+</html>

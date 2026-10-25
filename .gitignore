@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.idea/
+.vscode/
+.git/
+*.pkl
+prediction_history.csv
+prepared_training_dataset.csv

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Prediction History — Cloud Cost Predictor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Full log of all cloud cost predictions made using the predictor.">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #f8fafc; --ink: #0f172a; --muted: #64748b;
+            --line: #e2e8f0; --panel: #ffffff; --blue: #3b82f6;
+            --cyan: #06b6d4; --green: #10b981; --amber: #f59e0b;
+            --red: #ef4444;
+            --gradient: linear-gradient(135deg, #3b82f6, #06b6d4);
+            --shadow: 0 20px 40px rgba(15,23,42,0.06);
+        }
+        body {
+            font-family: 'Outfit', Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(59,130,246,0.1), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(16,185,129,0.08), transparent 30%),
+                var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        main { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 80px; }
+
+        /* NAV */
+        nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 40px; flex-wrap: wrap; }
+        .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.5px; text-decoration: none; color: var(--ink); }
+        .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 10px; background: var(--gradient); color: #fff; font-weight: 800; font-size: 18px; box-shadow: 0 4px 12px rgba(59,130,246,0.25); }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-link { border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--blue); padding: 10px 18px; font-size: 14px; font-weight: 700; text-decoration: none; transition: all 0.2s ease; }
+        .nav-link:hover { border-color: var(--blue); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.1); }
+
+        /* PAGE HEADER */
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        .page-header p { color: var(--muted); margin-top: 6px; font-size: 15px; }
+
+        /* STATS ROW */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: rgba(255,255,255,0.8); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; backdrop-filter: blur(12px); }
+        .stat-label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+        .stat-value { font-size: 26px; font-weight: 800; margin-top: 6px; color: var(--ink); }
+        .stat-value.green { color: var(--green); }
+        .stat-value.red { color: var(--red); }
+        .stat-value.amber { color: var(--amber); }
+
+        /* TABLE */
+        .table-panel { background: rgba(255,255,255,0.85); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; backdrop-filter: blur(14px); box-shadow: 0 4px 24px rgba(15,23,42,0.04); }
+        .table-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+        .table-header h2 { font-size: 14px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        thead th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--line); background: rgba(248,250,252,0.7); white-space: nowrap; }
+        tbody tr { border-bottom: 1px solid rgba(226,232,240,0.6); transition: background 0.15s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: rgba(59,130,246,0.025); }
+        td { padding: 13px 16px; vertical-align: middle; color: var(--ink); }
+        td.muted { color: var(--muted); font-size: 12.5px; }
+        td.mono { font-family: monospace; font-size: 13px; }
+
+        /* BADGES */
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+        .badge.within { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .badge.over { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .badge.none { background: #f1f5f9; color: #64748b; border: 1px solid var(--line); }
+
+        .cost-cell { font-weight: 700; color: var(--blue); }
+
+        /* EMPTY STATE */
+        .empty { padding: 60px 24px; text-align: center; color: var(--muted); }
+        .empty-icon { font-size: 40px; margin-bottom: 12px; }
+        .empty p { font-size: 15px; margin-bottom: 18px; }
+        .empty a { color: var(--blue); font-weight: 700; text-decoration: none; }
+
+        @media (max-width: 900px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            table { font-size: 12px; }
+            td, thead th { padding: 10px 12px; }
+        }
+        @media (max-width: 600px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .hide-mobile { display: none; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <nav>
+        <a class="brand" href="/">
+            <div class="brand-mark">☁</div>
+            Cloud Cost Predictor
+        </a>
+        <div class="nav-links">
+            <a class="nav-link" href="/">← Predict</a>
+            <a class="nav-link" href="/dashboard">Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>Prediction History</h1>
+        <p>Full log of all predictions made. Most recent first.</p>
+    </div>
+
+    {% if history %}
+        {% set total = history | length %}
+        {% set over_count = history | selectattr('budget_status', 'equalto', 'Over budget') | list | length %}
+        {% set within_count = history | selectattr('budget_status', 'equalto', 'Within budget') | list | length %}
+        {% set costs = history | map(attribute='monthly_cost') | map('float') | list %}
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Total Predictions</div>
+                <div class="stat-value">{{ total }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Over Budget</div>
+                <div class="stat-value red">{{ over_count }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Within Budget</div>
+                <div class="stat-value green">{{ within_count }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Monthly Cost</div>
+                <div class="stat-value amber">${{ (costs | sum / total) | round(2) }}</div>
+            </div>
+        </div>
+
+        <div class="table-panel">
+            <div class="table-header">
+                <h2>All Predictions</h2>
+                <span style="font-size:13px; color:var(--muted);">Showing {{ total }} record{{ 's' if total != 1 }}</span>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Timestamp</th>
+                            <th>CPU %</th>
+                            <th>RAM (GB)</th>
+                            <th>Storage (GB)</th>
+                            <th class="hide-mobile">Bandwidth (GB)</th>
+                            <th>VMs</th>
+                            <th>Monthly Cost</th>
+                            <th>Budget</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in history %}
+                        <tr>
+                            <td class="muted">{{ loop.index }}</td>
+                            <td class="muted mono">{{ row.timestamp }}</td>
+                            <td>{{ row.cpu_usage | float | round(1) }}%</td>
+                            <td>{{ row.memory_gb | float | round(2) }}</td>
+                            <td>{{ row.storage_gb | float | round(1) }}</td>
+                            <td class="hide-mobile">{{ row.bandwidth_gb | float | round(1) }}</td>
+                            <td>{{ row.vm_count }}</td>
+                            <td class="cost-cell">${{ row.monthly_cost | float | round(2) }}</td>
+                            <td class="muted">{% if row.monthly_budget %}${{ row.monthly_budget | float | round(2) }}{% else %}—{% endif %}</td>
+                            <td>
+                                {% if row.budget_status == 'Over budget' %}
+                                    <span class="badge over">Over Budget</span>
+                                {% elif row.budget_status == 'Within budget' %}
+                                    <span class="badge within">Within Budget</span>
+                                {% else %}
+                                    <span class="badge none">No Budget</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="table-panel">
+            <div class="empty">
+                <div class="empty-icon">📋</div>
+                <p>No predictions recorded yet.</p>
+                <a href="/">Make your first prediction →</a>
+            </div>
+        </div>
+    {% endif %}
+</main>
+</body>
+</html>
